@@ -1,2 +1,4 @@
 # CrickSL-Final-Year-project
-PUSL 3190 Computing Project. University of Plymouth 3rd(Final) year. Student No: 10953523
+Student Name: Rajapaksha Banula
+Student No: 10953523
+Module: PUSL3190 - Computing Project
