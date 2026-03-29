@@ -1,0 +1,20 @@
+# Secret credentials
+backend/.env
+
+# Data files - too large
+backend/data/
+
+# ML model binary
+backend/ml/
+
+# Virtual environment
+backend/venv/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# OS files
+.DS_Store
+Thumbs.db
