@@ -27,6 +27,7 @@ def get_active_sl_players(db: Session) -> List[str]:
     cutoff_date = date.today() - timedelta(days=3 * 365)
 
     # Layer 1: Last 3 years
+    # Strict filter: "Sri Lanka" only — excludes "Sri Lanka Women"
     recent_sl_match_ids = [
         m.id for m in db.query(Match).filter(
             (Match.team1 == "Sri Lanka") | (Match.team2 == "Sri Lanka"),
@@ -320,18 +321,37 @@ def recommend_xi(db: Session, venue_name: str, opponent_team: str, opponent_xi: 
 
     scored.sort(key=lambda x: x.total_score, reverse=True)
 
+    # ── Build balanced SQUAD of 15 first ──────────────────────────
+    squad = []
+    role_counts_squad = {"Batter": 0, "Wicket Keeper Batter": 0, "All Rounder": 0, "Bowler": 0}
+    role_limits_squad = {"Batter": 6, "Wicket Keeper Batter": 2, "All Rounder": 4, "Bowler": 5}
+
+    for ps in scored:
+        if len(squad) >= 17:
+            break
+        if role_counts_squad.get(ps.role, 0) < role_limits_squad.get(ps.role, 3):
+            squad.append(ps)
+            role_counts_squad[ps.role] = role_counts_squad.get(ps.role, 0) + 1
+
+    for ps in scored:
+        if len(squad) >= 17:
+            break
+        if ps not in squad:
+            squad.append(ps)
+
+    # ── Select best XI from squad ──────────────────────────────────
     selected = []
     role_counts = {"Batter": 0, "Wicket Keeper Batter": 0, "All Rounder": 0, "Bowler": 0}
     role_limits = {"Batter": 5, "Wicket Keeper Batter": 1, "All Rounder": 3, "Bowler": 4}
 
-    for ps in scored:
+    for ps in squad:
         if len(selected) >= 11:
             break
         if role_counts.get(ps.role, 0) < role_limits.get(ps.role, 2):
             selected.append(ps)
             role_counts[ps.role] = role_counts.get(ps.role, 0) + 1
 
-    for ps in scored:
+    for ps in squad:
         if len(selected) >= 11:
             break
         if ps not in selected:
@@ -372,6 +392,18 @@ def recommend_xi(db: Session, venue_name: str, opponent_team: str, opponent_xi: 
             "layer_2": "Appeared in at least 1 of last 10 SL matches",
             "note": "Retired player stats still used for venue and analytics calculations",
         },
+        "squad_17": [
+            {
+                "rank": i + 1,
+                "name": p.name,
+                "role": p.role,
+                "batting_style": p.batting_style,
+                "bowling_style": p.bowling_style,
+                "selection_score": round(p.total_score, 2),
+                "in_recommended_xi": p in selected,
+            }
+            for i, p in enumerate(squad)
+        ],
         "recommended_xi": [
             {
                 "position": i + 1,
