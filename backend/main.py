@@ -1,11 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers import venues, players, matches, predictions, reports, dew, xi_recommendation
+from routers import venues, players, matches, predictions, reports, weather, dls, xi_recommendation
 
 app = FastAPI(
     title="CrickSL API",
     description="Cricket analytics decision support system for T20 matches",
-    version="2.0.0",
+    version="3.0.0",
 )
 
 app.add_middleware(
@@ -21,27 +21,22 @@ app.include_router(players.router,            prefix="/players",   tags=["Player
 app.include_router(matches.router,            prefix="/matches",   tags=["Matches"])
 app.include_router(predictions.router,        prefix="/predict",   tags=["Prediction"])
 app.include_router(reports.router,            prefix="/reports",   tags=["Reports"])
-app.include_router(dew.router,                prefix="/dew",       tags=["Dew Analysis"])
+app.include_router(weather.router,            prefix="/weather",   tags=["Weather"])
+app.include_router(dls.router,                prefix="/dls",       tags=["DLS Calculator"])
 app.include_router(xi_recommendation.router,  prefix="/xi",        tags=["Playing XI"])
-
 
 @app.get("/")
 def root():
     return {
-        "message": "CrickSL API is running 🏏",
-        "version": "2.0.0",
-        "features": [
-            "Venue analytics",
-            "Player performance",
-            "Match history",
-            "Win prediction (ML)",
-            "Pre-match reports",
-            "Dew risk analysis",
-            "Playing XI recommendation",
-        ]
+        "message": "CrickSL API 🏏",
+        "version": "3.0.0",
+        "sections": {
+            "section_1": "Venue & Weather Analysis — /venues, /weather",
+            "section_2": "Playing XI Recommendation — /xi",
+            "section_3": "DLS Rain Calculator — /dls",
+        }
     }
-
 
 @app.get("/health")
 def health():
-    return {"status": "ok", "version": "2.0.0"}
+    return {"status": "ok", "version": "3.0.0"}
