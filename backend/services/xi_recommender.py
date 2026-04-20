@@ -38,16 +38,28 @@ def get_active_sl_players(db: Session) -> List[str]:
     if not recent_sl_match_ids:
         return []
 
+    # Get innings where SL was batting/bowling
+    from models.db_models import Innings
+    sl_batting_innings = [
+        i.id for i in db.query(Innings).filter(
+            Innings.match_id.in_(recent_sl_match_ids),
+            Innings.batting_team == "Sri Lanka",
+        ).all()
+    ]
+    sl_bowling_innings = [
+        i.id for i in db.query(Innings).filter(
+            Innings.match_id.in_(recent_sl_match_ids),
+            Innings.bowling_team == "Sri Lanka",
+        ).all()
+    ]
     batters_3yr = set(
         b.batter for b in db.query(Delivery.batter).filter(
-            Delivery.match_id.in_(recent_sl_match_ids),
-            Delivery.batting_team == "Sri Lanka",
+            Delivery.innings_id.in_(sl_batting_innings),
         ).distinct().all()
     )
     bowlers_3yr = set(
         b.bowler for b in db.query(Delivery.bowler).filter(
-            Delivery.match_id.in_(recent_sl_match_ids),
-            Delivery.bowling_team == "Sri Lanka",
+            Delivery.innings_id.in_(sl_bowling_innings),
         ).distinct().all()
     )
     layer1 = batters_3yr | bowlers_3yr
@@ -61,16 +73,26 @@ def get_active_sl_players(db: Session) -> List[str]:
         ).order_by(Match.date.desc()).limit(10).all()
     ]
 
+    sl_bat_inn_10 = [
+        i.id for i in db.query(Innings).filter(
+            Innings.match_id.in_(last_10_ids),
+            Innings.batting_team == "Sri Lanka",
+        ).all()
+    ]
+    sl_bowl_inn_10 = [
+        i.id for i in db.query(Innings).filter(
+            Innings.match_id.in_(last_10_ids),
+            Innings.bowling_team == "Sri Lanka",
+        ).all()
+    ]
     batters_10 = set(
         b.batter for b in db.query(Delivery.batter).filter(
-            Delivery.match_id.in_(last_10_ids),
-            Delivery.batting_team == "Sri Lanka",
+            Delivery.innings_id.in_(sl_bat_inn_10),
         ).distinct().all()
     )
     bowlers_10 = set(
         b.bowler for b in db.query(Delivery.bowler).filter(
-            Delivery.match_id.in_(last_10_ids),
-            Delivery.bowling_team == "Sri Lanka",
+            Delivery.innings_id.in_(sl_bowl_inn_10),
         ).distinct().all()
     )
     layer2 = batters_10 | bowlers_10
