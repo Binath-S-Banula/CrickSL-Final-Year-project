@@ -104,7 +104,11 @@ def get_active_sl_players(db: Session) -> List[str]:
 
 
 def get_active_players_with_metadata(db: Session) -> list:
-    """Returns Player objects for active SL players with metadata."""
+    """
+    Returns Player objects for active SL players WITH metadata only.
+    Players without metadata are excluded — this naturally filters out
+    women players since players_metadata.csv only contains men's players.
+    """
     active_names = get_active_sl_players(db)
     if not active_names:
         return []
@@ -113,21 +117,11 @@ def get_active_players_with_metadata(db: Session) -> list:
         Player.name.in_(active_names),
         Player.nationality == "Sri Lanka",
         Player.player_role != None,
+        Player.batting_style != None,
     ).all()
 
-    names_with_meta = {p.name for p in players_with_meta}
-    extra = []
-    for name in active_names:
-        if name not in names_with_meta:
-            p = Player()
-            p.name = name
-            p.nationality = "Sri Lanka"
-            p.batting_style = "Right Hand"
-            p.bowling_style = None
-            p.player_role = "Batter"
-            extra.append(p)
-
-    return players_with_meta + extra
+    print(f"   Players with metadata in active pool: {len(players_with_meta)}")
+    return players_with_meta
 
 
 @dataclass
