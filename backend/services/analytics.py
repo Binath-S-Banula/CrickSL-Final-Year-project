@@ -11,6 +11,9 @@ def get_venue_par_score(db, venue_id, sl_role="batting", opponent_team=None):
     venue = db.query(Venue).filter(Venue.id == venue_id).first()
     if not venue:
         return {"error": "Venue not found"}
+    # Normalize opponent team name to title case
+    if opponent_team:
+        opponent_team = opponent_team.strip().title()
     results = {}
     all_first = db.query(Innings).filter(
         Innings.match_id.in_(db.query(Match.id).filter(Match.venue_id==venue_id, Match.no_result==False)),
