@@ -76,7 +76,7 @@ def _get_venue_dew_factor(db: Session, venue_id: int) -> float:
     Returns venue dew influence factor.
     Higher = chasing teams benefit more = more dew influence.
     """
-    from services.dew_analysis import get_venue_historical_dew_pattern
+    from services.weather_analysis import get_venue_historical_dew_pattern
     historical = get_venue_historical_dew_pattern(db, venue_id)
     return historical["dew_influence_factor"]
 
@@ -334,7 +334,7 @@ def predict_win_probability(db: Session, input: PredictionInput) -> Optional[Pre
     opp_form = _get_recent_form(db, opponent)
 
     # NEW: Dew factor
-    from services.dew_analysis import get_venue_historical_dew_pattern
+    from services.weather_analysis import get_venue_historical_dew_pattern
     historical = get_venue_historical_dew_pattern(db, venue.id)
     dew_factor = historical["dew_influence_factor"]
 
@@ -380,8 +380,8 @@ def predict_win_probability(db: Session, input: PredictionInput) -> Optional[Pre
         factors.append(f"Opponent in better recent form ({round(opp_form*100)}% vs SL's {round(sl_form*100)}%)")
 
     # Dew factor
-    from services.dew_analysis import get_dew_risk_label
-    dew_label = get_dew_risk_label(dew_factor)
+    from services.weather_analysis import risk_label
+    dew_label = risk_label(dew_factor)
     if dew_factor > 0.5:
         if sl_batting_first:
             factors.append(f"Dew risk is {dew_label} at this venue — chasing team benefits, hurts SL batting first")
