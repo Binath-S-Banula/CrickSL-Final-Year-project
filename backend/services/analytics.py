@@ -48,14 +48,43 @@ def get_venue_par_score(db, venue_id, sl_role="batting", opponent_team=None):
         conf = "INSUFFICIENT" if sl_vs_opp_matches<3 else "LOW" if sl_vs_opp_matches<5 else "MEDIUM" if sl_vs_opp_matches<10 else "HIGH"
         results["sl_vs_opponent_at_venue"] = {"par_score": sl_vs_opp_avg, "matches": sl_vs_opp_matches,
             "opponent": opponent_team, "confidence": conf}
-    if opponent_team and sl_vs_opp_matches>=5 and sl_vs_opp_avg>0:
-        recommended, source, conf = sl_vs_opp_avg, f"SL vs {opponent_team} at {venue.name}", results["sl_vs_opponent_at_venue"]["confidence"]
-    elif len(sl_inn)>=3 and sl_avg>0:
-        recommended, source, conf = sl_avg, f"SL at {venue.name}", results["sl_at_venue"]["confidence"]
+    # Use most specific data available — lowered threshold to 3 matches
+    if opponent_team and sl_vs_opp_matches >= 3 and sl_vs_opp_avg > 0:
+        recommended = sl_vs_opp_avg
+        source = f"SL vs {opponent_team} at {venue.name}"
+        conf = results["sl_vs_opponent_at_venue"]["confidence"]
+        data_level = "opponent_specific"
+    elif len(sl_inn) >= 3 and sl_avg > 0:
+        recommended = sl_avg
+        source = f"SL at {venue.name}"
+        conf = results["sl_at_venue"]["confidence"]
+        data_level = "sl_at_venue"
+    elif overall_avg > 0:
+        recommended = overall_avg
+        source = f"Overall {venue.name} average"
+        conf = results["overall_venue_average"]["confidence"]
+        data_level = "overall_venue"
     else:
-        recommended, source, conf = overall_avg, f"Overall {venue.name} average", results["overall_venue_average"]["confidence"]
-    interp = f"SL should target {recommended} runs batting first" if sl_role=="batting" else f"SL should restrict {opponent_team or 'opponent'} to under {recommended} runs"
-    results["recommended"] = {"par_score": recommended, "source": source, "confidence": conf, "sl_role": sl_role, "opponent": opponent_team, "interpretation": interp}
+        recommended = 150.0
+        source = "T20 International average (insufficient venue data)"
+        conf = "VERY LOW"
+        data_level = "global_default"
+
+    interp = (
+        f"SL should target {recommended} runs batting first"
+        if sl_role == "batting"
+        else f"SL should restrict {opponent_team or 'opponent'} to under {recommended} runs"
+    )
+    results["recommended"] = {
+        "par_score": recommended,
+        "source": source,
+        "confidence": conf,
+        "data_level": data_level,
+        "sl_role": sl_role,
+        "opponent": opponent_team,
+        "interpretation": interp,
+        "note": "Score changes with opponent when 3+ historical matches exist at this venue"
+    }
     return results
 
 

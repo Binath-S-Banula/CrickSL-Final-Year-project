@@ -182,6 +182,10 @@ def train_model(db: Session):
     X = np.array(X)
     y = np.array(y)
 
+    if X.ndim == 1 or len(X) == 0:
+        print("   ❌ No valid feature vectors built. Check data.")
+        return None
+
     print(f"   Built feature matrix: {X.shape[0]} samples × {X.shape[1]} features")
 
     X_train, X_test, y_train, y_test = train_test_split(
