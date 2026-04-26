@@ -218,3 +218,20 @@ class TokenResponse(BaseModel):
 
 class RefreshRequest(BaseModel):
     refresh_token: str
+
+
+# ─── Analytics Extra Schemas ──────────────────────────────────────
+
+class TopBatter(BaseModel):
+    name: str
+    matches: int
+    runs: int
+    average: float
+    strike_rate: float
+
+class TopBowler(BaseModel):
+    name: str
+    matches: int
+    wickets: int
+    economy: float
+    average: float
