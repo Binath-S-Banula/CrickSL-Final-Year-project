@@ -1,36 +1,35 @@
-from sqlalchemy import Column, Integer, String, Float, Date, Boolean, ForeignKey
+from sqlalchemy import Column, Integer, String, Float, Date, Boolean, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
+from datetime import datetime
 from database import Base
+
+
+# ─── Existing Models ──────────────────────────────────────────────
 
 
 class Venue(Base):
     __tablename__ = "venues"
-
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, nullable=False)
     city = Column(String)
     country = Column(String)
-
     matches = relationship("Match", back_populates="venue")
 
 
 class Player(Base):
     __tablename__ = "players"
-
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, nullable=False)
     cricsheet_id = Column(String, unique=True, nullable=True)
-
-    # Player metadata — added in v2.0
-    batting_style = Column(String, nullable=True)   # Right Hand / Left Hand
-    bowling_style = Column(String, nullable=True)   # Right Arm Fast / Left Arm Orthodox etc.
-    player_role = Column(String, nullable=True)     # Batter / Bowler / All Rounder / WK Batter
-    nationality = Column(String, nullable=True)     # Country
+    batting_style = Column(String, nullable=True)
+    bowling_style = Column(String, nullable=True)
+    player_role = Column(String, nullable=True)
+    nationality = Column(String, nullable=True)
+    is_active = Column(Boolean, default=True)
 
 
 class Match(Base):
     __tablename__ = "matches"
-
     id = Column(Integer, primary_key=True, index=True)
     cricsheet_id = Column(String, unique=True, nullable=False)
     date = Column(Date)
@@ -44,14 +43,12 @@ class Match(Base):
     win_by_wickets = Column(Integer, nullable=True)
     no_result = Column(Boolean, default=False)
     season = Column(String)
-
     venue = relationship("Venue", back_populates="matches")
     innings = relationship("Innings", back_populates="match")
 
 
 class Innings(Base):
     __tablename__ = "innings"
-
     id = Column(Integer, primary_key=True, index=True)
     match_id = Column(Integer, ForeignKey("matches.id"))
     innings_number = Column(Integer)
@@ -60,14 +57,12 @@ class Innings(Base):
     total_runs = Column(Integer, default=0)
     total_wickets = Column(Integer, default=0)
     total_overs = Column(Float, default=0.0)
-
     match = relationship("Match", back_populates="innings")
     deliveries = relationship("Delivery", back_populates="innings")
 
 
 class Delivery(Base):
     __tablename__ = "deliveries"
-
     id = Column(Integer, primary_key=True, index=True)
     innings_id = Column(Integer, ForeignKey("innings.id"))
     match_id = Column(Integer, ForeignKey("matches.id"))
@@ -89,5 +84,20 @@ class Delivery(Base):
     player_out = Column(String, nullable=True)
     is_boundary_four = Column(Boolean, default=False)
     is_boundary_six = Column(Boolean, default=False)
-
     innings = relationship("Innings", back_populates="deliveries")
+
+
+# ─── NEW: User Model for Authentication ───────────────────────────
+
+
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String(50), unique=True, nullable=False, index=True)
+    email = Column(String(100), unique=True, nullable=False, index=True)
+    hashed_password = Column(String(255), nullable=False)
+    role = Column(String(20), default="analyst")   # "admin" or "analyst"
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    last_login = Column(DateTime, nullable=True)
