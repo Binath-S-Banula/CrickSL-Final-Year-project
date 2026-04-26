@@ -1,13 +1,23 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers import venues, players, matches, predictions, reports, weather, dls, xi_recommendation
+from database import engine, Base
+from models import db_models
+
+# Create all tables
+Base.metadata.create_all(bind=engine)
+
+# Import all routers
+from routers import venues, players, matches, predictions, reports
+from routers import weather, dls, xi_recommendation
+from routers.auth import router as auth_router
 
 app = FastAPI(
     title="CrickSL API",
-    description="Cricket analytics decision support system for T20 matches",
-    version="3.0.0",
+    description="T20 Cricket Analytics and Decision Support System for Sri Lanka",
+    version="4.0.0"
 )
 
+# CORS — allow React frontend
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173", "http://localhost:3000"],
@@ -16,27 +26,23 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(venues.router,             prefix="/venues",    tags=["Venues"])
-app.include_router(players.router,            prefix="/players",   tags=["Players"])
-app.include_router(matches.router,            prefix="/matches",   tags=["Matches"])
-app.include_router(predictions.router,        prefix="/predict",   tags=["Prediction"])
-app.include_router(reports.router,            prefix="/reports",   tags=["Reports"])
-app.include_router(weather.router,            prefix="/weather",   tags=["Weather"])
-app.include_router(dls.router,                prefix="/dls",       tags=["DLS Calculator"])
-app.include_router(xi_recommendation.router,  prefix="/xi",        tags=["Playing XI"])
+# ─── Routers ──────────────────────────────────────────────────────
+app.include_router(auth_router)          # /auth/*
+app.include_router(venues.router)        # /venues/*
+app.include_router(players.router)       # /players/*
+app.include_router(matches.router)       # /matches/*
+app.include_router(predictions.router)   # /predict/*
+app.include_router(reports.router)       # /reports/*
+app.include_router(weather.router)       # /weather/*
+app.include_router(dls.router)           # /dls/*
+app.include_router(xi_recommendation.router)  # /xi/*
+
 
 @app.get("/")
 def root():
     return {
-        "message": "CrickSL API 🏏",
-        "version": "3.0.0",
-        "sections": {
-            "section_1": "Venue & Weather Analysis — /venues, /weather",
-            "section_2": "Playing XI Recommendation — /xi",
-            "section_3": "DLS Rain Calculator — /dls",
-        }
+        "app": "CrickSL API",
+        "version": "4.0.0",
+        "status": "running",
+        "docs": "/docs"
     }
-
-@app.get("/health")
-def health():
-    return {"status": "ok", "version": "3.0.0"}
