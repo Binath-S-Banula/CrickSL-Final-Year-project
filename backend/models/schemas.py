@@ -1,43 +1,25 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from typing import Optional, List
-from datetime import date
+from datetime import datetime
 
 
-# ── Venue ──────────────────────────────────────────────────────────
+# ─── Existing Schemas ─────────────────────────────────────────────
+
 class VenueBase(BaseModel):
     name: str
-    city: Optional[str]
-    country: Optional[str]
+    city: Optional[str] = None
+    country: Optional[str] = None
 
-class VenueOut(VenueBase):
+class VenueResponse(VenueBase):
     id: int
     class Config:
         from_attributes = True
 
-class VenueStats(BaseModel):
-    venue_id: int
-    venue_name: str
-    total_matches: int
-    avg_first_innings_score: float
-    avg_second_innings_score: float
-    bat_first_wins: int
-    chase_wins: int
-    bat_first_win_pct: float
-    chase_win_pct: float
-    toss_recommendation: str
-
-class PhaseStats(BaseModel):
-    phase: str
-    avg_runs: float
-    avg_wickets: float
-    total_deliveries: int
-
-
-# ── Player ──────────────────────────────────────────────────────────
-class PlayerOut(BaseModel):
-    id: int
+class PlayerBase(BaseModel):
     name: str
-    cricsheet_id: Optional[str] = None
+
+class PlayerResponse(PlayerBase):
+    id: int
     batting_style: Optional[str] = None
     bowling_style: Optional[str] = None
     player_role: Optional[str] = None
@@ -45,86 +27,64 @@ class PlayerOut(BaseModel):
     class Config:
         from_attributes = True
 
-class BattingStats(BaseModel):
-    player_name: str
-    innings: int
-    total_runs: int
-    average: float
-    strike_rate: float
-    boundary_pct: float
-    dot_ball_pct: float
-    highest_score: int
-    fifties: int
-    hundreds: int
-
-class BowlingStats(BaseModel):
-    player_name: str
-    innings: int
-    wickets: int
-    economy: float
-    bowling_strike_rate: Optional[float]
-    dot_ball_pct: float
-    average: Optional[float]
-
-class PlayerAtVenue(BaseModel):
-    player_name: str
-    venue_name: str
-    batting: Optional[BattingStats]
-    bowling: Optional[BowlingStats]
-
-
-# ── Match ────────────────────────────────────────────────────────────
-class MatchOut(BaseModel):
-    id: int
-    cricsheet_id: str
-    date: Optional[date]
-    venue_name: Optional[str]
+class MatchBase(BaseModel):
+    date: Optional[str] = None
     team1: str
     team2: str
-    toss_winner: str
-    toss_decision: str
-    winner: Optional[str]
-    win_by_runs: Optional[int]
-    win_by_wickets: Optional[int]
+    winner: Optional[str] = None
+
+class MatchResponse(MatchBase):
+    id: int
+    toss_winner: Optional[str] = None
+    toss_decision: Optional[str] = None
     class Config:
         from_attributes = True
 
-
-# ── Pre-match Report ─────────────────────────────────────────────────
-class TopBatter(BaseModel):
-    name: str
-    runs: int
-    average: float
-    strike_rate: float
-
-class TopBowler(BaseModel):
-    name: str
-    wickets: int
-    economy: float
-
-class PreMatchReport(BaseModel):
+class PredictionRequest(BaseModel):
     venue_name: str
-    team1: str
-    team2: str
-    venue_stats: VenueStats
-    phase_stats: List[PhaseStats]
-    toss_recommendation: str
-    team1_top_batters: List[TopBatter]
-    team1_top_bowlers: List[TopBowler]
-    team2_top_batters: List[TopBatter]
-    team2_top_bowlers: List[TopBowler]
-
-
-# ── Prediction ───────────────────────────────────────────────────────
-class PredictionInput(BaseModel):
-    venue_name: str
-    toss_winner: str          # "Sri Lanka" or opponent
-    toss_decision: str        # "bat" or "field"
+    toss_winner: str
+    toss_decision: str
     team1: str
     team2: str
 
-class PredictionOut(BaseModel):
+class PredictionResponse(BaseModel):
     sl_win_probability: float
     opponent_win_probability: float
     recommendation: str
     key_factors: List[str]
+
+
+# ─── NEW: Auth Schemas ────────────────────────────────────────────
+
+class UserCreate(BaseModel):
+    username: str
+    email: str
+    password: str
+
+
+class UserLogin(BaseModel):
+    username: str
+    password: str
+
+
+class UserResponse(BaseModel):
+    id: int
+    username: str
+    email: str
+    role: str
+    is_active: bool
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class TokenResponse(BaseModel):
+    access_token: str
+    refresh_token: str
+    token_type: str
+    user: UserResponse
+
+
+class RefreshRequest(BaseModel):
+    refresh_token: str
