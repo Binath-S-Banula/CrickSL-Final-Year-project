@@ -1,6 +1,6 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from typing import Optional, List, Any, Dict
-from datetime import datetime
+from datetime import datetime, date
 
 
 # ─── Venue Schemas ────────────────────────────────────────────────
@@ -10,23 +10,18 @@ class VenueBase(BaseModel):
     city: Optional[str] = None
     country: Optional[str] = None
 
-
 class VenueOut(VenueBase):
     id: int
-
     class Config:
         from_attributes = True
 
-
 VenueResponse = VenueOut
-
 
 class PhaseStats(BaseModel):
     phase: str
     avg_runs: float
     avg_wickets: float
     run_rate: float
-
 
 class VenueStats(BaseModel):
     venue_id: int
@@ -39,8 +34,7 @@ class VenueStats(BaseModel):
     bat_first_win_pct: float
     chase_win_pct: float
     toss_recommendation: str
-    phase_stats: List[PhaseStats] = Field(default_factory=list)
-
+    phase_stats: Optional[List[PhaseStats]] = []
 
 class ParScoreResponse(BaseModel):
     venue_id: int
@@ -61,20 +55,16 @@ class ParScoreResponse(BaseModel):
 class PlayerBase(BaseModel):
     name: str
 
-
 class PlayerOut(PlayerBase):
     id: int
     batting_style: Optional[str] = None
     bowling_style: Optional[str] = None
     player_role: Optional[str] = None
     nationality: Optional[str] = None
-
     class Config:
         from_attributes = True
 
-
 PlayerResponse = PlayerOut
-
 
 class BattingStats(BaseModel):
     player_name: str
@@ -87,7 +77,6 @@ class BattingStats(BaseModel):
     hundreds: int
     boundary_pct: float
     dot_ball_pct: float
-
 
 class BowlingStats(BaseModel):
     player_name: str
@@ -107,16 +96,13 @@ class MatchBase(BaseModel):
     team2: str
     winner: Optional[str] = None
 
-
 class MatchOut(MatchBase):
     id: int
     toss_winner: Optional[str] = None
     toss_decision: Optional[str] = None
     venue_id: Optional[int] = None
-
     class Config:
         from_attributes = True
-
 
 MatchResponse = MatchOut
 
@@ -129,7 +115,6 @@ class PredictionRequest(BaseModel):
     toss_decision: str
     team1: str
     team2: str
-
 
 class PredictionResponse(BaseModel):
     sl_win_probability: float
@@ -145,7 +130,6 @@ class XIRecommendationRequest(BaseModel):
     opponent_team: str
     opponent_xi: List[str]
 
-
 class PlayerXIEntry(BaseModel):
     position: int
     name: str
@@ -156,14 +140,13 @@ class PlayerXIEntry(BaseModel):
     reason: Optional[str] = None
     in_recommended_xi: Optional[bool] = None
 
-
 class XIRecommendationResponse(BaseModel):
     venue_name: str
     opponent_team: str
     recommended_xi: List[PlayerXIEntry]
-    squad_17: List[PlayerXIEntry] = Field(default_factory=list)
-    matchup_insights: Dict[str, Any] = Field(default_factory=dict)
-    selection_criteria: Dict[str, str] = Field(default_factory=dict)
+    squad_17: Optional[List[PlayerXIEntry]] = []
+    matchup_insights: Optional[Dict[str, Any]] = {}
+    selection_criteria: Optional[Dict[str, str]] = {}
     active_player_pool_size: Optional[int] = None
 
 
@@ -176,16 +159,15 @@ class DLSRequest(BaseModel):
     playing_xi: List[str]
     overs_available: int = 20
 
-
 class DLSResponse(BaseModel):
     venue_name: str
     sl_role: str
     par_score: float
     total_overs: int
     required_run_rate: float
-    milestone_table: List[Any] = Field(default_factory=list)
-    match_strategy: List[str] = Field(default_factory=list)
-    playing_xi: List[Any] = Field(default_factory=list)
+    milestone_table: List[Any]
+    match_strategy: List[str]
+    playing_xi: List[Any]
     data_source: Optional[str] = None
 
 
@@ -200,25 +182,23 @@ class WeatherResponse(BaseModel):
     rain_probability: Optional[float] = None
     cloud_cover: Optional[float] = None
     humidity_source: Optional[str] = None
-    weather_data: Dict[str, Any] = Field(default_factory=dict)
-    impacts: List[str] = Field(default_factory=list)
-    recommendations: List[str] = Field(default_factory=list)
-    sl_impact_analysis: Optional[Dict[str, Any]] = None
+    weather_data: Optional[Dict[str, Any]] = {}
+    impacts: List[str] = []
+    recommendations: List[str] = []
+    sl_impact_analysis: Optional[Dict[str, Any]] = {}
     toss_recommendation: Optional[str] = None
 
 
-# ─── Auth Schemas ─────────────────────────────────────────────────
+# ─── Auth Schemas (NEW) ───────────────────────────────────────────
 
 class UserCreate(BaseModel):
     username: str
     email: str
     password: str
 
-
 class UserLogin(BaseModel):
     username: str
     password: str
-
 
 class UserResponse(BaseModel):
     id: int
@@ -227,17 +207,14 @@ class UserResponse(BaseModel):
     role: str
     is_active: bool
     created_at: datetime
-
     class Config:
         from_attributes = True
-
 
 class TokenResponse(BaseModel):
     access_token: str
     refresh_token: str
     token_type: str
     user: UserResponse
-
 
 class RefreshRequest(BaseModel):
     refresh_token: str
@@ -252,10 +229,40 @@ class TopBatter(BaseModel):
     average: float
     strike_rate: float
 
-
 class TopBowler(BaseModel):
     name: str
     matches: int
     wickets: int
     economy: float
     average: float
+
+# ─── Auth Schemas ─────────────────────────────────────────────────
+from datetime import datetime
+
+class UserCreate(BaseModel):
+    username: str
+    email: str
+    password: str
+
+class UserLogin(BaseModel):
+    username: str
+    password: str
+
+class UserResponse(BaseModel):
+    id: int
+    username: str
+    email: str
+    role: str
+    is_active: bool
+    created_at: datetime
+    class Config:
+        from_attributes = True
+
+class TokenResponse(BaseModel):
+    access_token: str
+    refresh_token: str
+    token_type: str
+    user: UserResponse
+
+class RefreshRequest(BaseModel):
+    refresh_token: str
