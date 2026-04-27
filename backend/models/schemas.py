@@ -87,6 +87,16 @@ class BowlingStats(BaseModel):
     strike_rate: float
     dot_ball_pct: float
 
+class PlayerAtVenue(BaseModel):
+    player_name: str
+    matches: int
+    runs: Optional[int] = None
+    average: Optional[float] = None
+    strike_rate: Optional[float] = None
+    wickets: Optional[int] = None
+    economy: Optional[float] = None
+    role: Optional[str] = None
+
 
 # ─── Match Schemas ────────────────────────────────────────────────
 
@@ -117,6 +127,20 @@ class PredictionRequest(BaseModel):
     team2: str
 
 class PredictionResponse(BaseModel):
+    sl_win_probability: float
+    opponent_win_probability: float
+    recommendation: str
+    key_factors: List[str]
+
+# Aliases used by predictions router
+class PredictionInput(BaseModel):
+    venue_name: str
+    toss_winner: str
+    toss_decision: str
+    team1: str
+    team2: str
+
+class PredictionOut(BaseModel):
     sl_win_probability: float
     opponent_win_probability: float
     recommendation: str
@@ -189,37 +213,6 @@ class WeatherResponse(BaseModel):
     toss_recommendation: Optional[str] = None
 
 
-# ─── Auth Schemas (NEW) ───────────────────────────────────────────
-
-class UserCreate(BaseModel):
-    username: str
-    email: str
-    password: str
-
-class UserLogin(BaseModel):
-    username: str
-    password: str
-
-class UserResponse(BaseModel):
-    id: int
-    username: str
-    email: str
-    role: str
-    is_active: bool
-    created_at: datetime
-    class Config:
-        from_attributes = True
-
-class TokenResponse(BaseModel):
-    access_token: str
-    refresh_token: str
-    token_type: str
-    user: UserResponse
-
-class RefreshRequest(BaseModel):
-    refresh_token: str
-
-
 # ─── Analytics Extra Schemas ──────────────────────────────────────
 
 class TopBatter(BaseModel):
@@ -236,8 +229,22 @@ class TopBowler(BaseModel):
     economy: float
     average: float
 
+
+# ─── Reports Schemas ──────────────────────────────────────────────
+
+class PreMatchReport(BaseModel):
+    venue_name: str
+    team1: str
+    team2: str
+    venue_stats: Optional[VenueStats] = None
+    phase_stats: Optional[List[PhaseStats]] = []
+    top_batters: Optional[List[TopBatter]] = []
+    top_bowlers: Optional[List[TopBowler]] = []
+    toss_recommendation: Optional[str] = None
+    weather_summary: Optional[Dict[str, Any]] = {}
+
+
 # ─── Auth Schemas ─────────────────────────────────────────────────
-from datetime import datetime
 
 class UserCreate(BaseModel):
     username: str
