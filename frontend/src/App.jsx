@@ -7,31 +7,27 @@ import Home from './pages/Home'
 import VenueWeather from './pages/VenueWeather'
 import PlayingXI from './pages/PlayingXI'
 import DLSCalculator from './pages/DLSCalculator'
+import AdminPanel from './pages/AdminPanel'
 
 export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          {/* Public route - Login */}
           <Route path="/login" element={<Login />} />
-
-          {/* Protected routes - require login */}
-          <Route
-            path="/*"
-            element={
-              <ProtectedRoute>
-                <Navbar />
-                <Routes>
-                  <Route path="/"               element={<Home />} />
-                  <Route path="/venue-weather"  element={<VenueWeather />} />
-                  <Route path="/playing-xi"     element={<PlayingXI />} />
-                  <Route path="/dls"            element={<DLSCalculator />} />
-                  <Route path="*"               element={<Navigate to="/" replace />} />
-                </Routes>
-              </ProtectedRoute>
-            }
-          />
+          <Route path="/*" element={
+            <ProtectedRoute>
+              <Navbar />
+              <Routes>
+                <Route path="/"              element={<Home />} />
+                <Route path="/venue-weather" element={<VenueWeather />} />
+                <Route path="/playing-xi"    element={<PlayingXI />} />
+                <Route path="/dls"           element={<DLSCalculator />} />
+                <Route path="/admin"         element={<AdminPanel />} />
+                <Route path="*"              element={<Navigate to="/" replace />} />
+              </Routes>
+            </ProtectedRoute>
+          } />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

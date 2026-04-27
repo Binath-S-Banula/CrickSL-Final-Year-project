@@ -7,7 +7,7 @@
 }
 
 .navbar-inner {
-  max-width: 1200px;
+  max-width: 1280px;
   margin: 0 auto;
   padding: 0 1.5rem;
   height: 64px;
@@ -17,7 +17,6 @@
   gap: 1rem;
 }
 
-/* Brand */
 .navbar-brand {
   display: flex;
   align-items: center;
@@ -36,7 +35,6 @@
 
 .brand-accent { color: #f59e0b; }
 
-/* Nav Links */
 .navbar-links {
   display: flex;
   align-items: center;
@@ -68,7 +66,6 @@
   border: 1px solid rgba(245,158,11,0.25);
 }
 
-/* User Info + Logout */
 .navbar-user {
   display: flex;
   align-items: center;
@@ -98,18 +95,6 @@
   letter-spacing: 0.5px;
 }
 
-.user-role.admin {
-  background: rgba(245,158,11,0.15);
-  color: #fbbf24;
-  border: 1px solid rgba(245,158,11,0.3);
-}
-
-.user-role.analyst {
-  background: rgba(59,130,246,0.15);
-  color: #60a5fa;
-  border: 1px solid rgba(59,130,246,0.3);
-}
-
 .btn-logout {
   background: transparent;
   border: 1px solid #2a3a52;
@@ -131,7 +116,6 @@
   color: #f87171;
 }
 
-/* Responsive */
 @media (max-width: 768px) {
   .navbar-links { display: none; }
   .user-info { display: none; }

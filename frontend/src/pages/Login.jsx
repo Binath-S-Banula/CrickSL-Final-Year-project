@@ -1,141 +1,215 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import api from '../api/api'
 
 export default function Login() {
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError]       = useState('')
-  const [loading, setLoading]   = useState(false)
-  const { login }    = useAuth()
-  const navigate     = useNavigate()
+  const [tab, setTab]               = useState('signin')
+  const [username, setUsername]     = useState('')
+  const [email, setEmail]           = useState('')
+  const [password, setPassword]     = useState('')
+  const [confirmPwd, setConfirmPwd] = useState('')
+  const [role, setRole]             = useState('analyst')
+  const [error, setError]           = useState('')
+  const [success, setSuccess]       = useState('')
+  const [loading, setLoading]       = useState(false)
+  const { login } = useAuth()
+  const navigate  = useNavigate()
 
-  const handleSubmit = async (e) => {
+  const resetForm = () => {
+    setUsername(''); setEmail(''); setPassword('')
+    setConfirmPwd(''); setRole('analyst'); setError(''); setSuccess('')
+  }
+
+  const handleSignIn = async (e) => {
     e.preventDefault()
-    if (!username || !password) { setError('Please enter both username and password'); return }
-    setLoading(true)
-    setError('')
+    if (!username || !password) { setError('Please enter your username and password'); return }
+    setLoading(true); setError('')
     try {
-      const user = await login(username, password)
-      navigate(user.role === 'admin' ? '/' : '/')
+      await login(username, password)
+      navigate('/')
     } catch (err) {
-      setError(err.response?.data?.detail || 'Login failed. Check your credentials.')
+      setError(err.response?.data?.detail || 'Invalid credentials. Please try again.')
+    }
+    setLoading(false)
+  }
+
+  const handleSignUp = async (e) => {
+    e.preventDefault()
+    if (!username || !email || !password || !confirmPwd) { setError('All fields are required'); return }
+    if (password !== confirmPwd) { setError('Passwords do not match'); return }
+    if (password.length < 8) { setError('Password must be at least 8 characters'); return }
+    setLoading(true); setError('')
+    try {
+      await api.post('/auth/register', { username, email, password, role })
+      setSuccess('Account created successfully! You can now sign in.')
+      resetForm()
+      setTab('signin')
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Registration failed. Username or email may already exist.')
     }
     setLoading(false)
   }
 
   return (
-    <div style={styles.page}>
-      <div style={styles.card}>
+    <div style={s.page}>
+      <div style={s.card}>
 
         {/* Logo */}
-        <div style={styles.logoRow}>
-          <img src="/cricksl-favicon.png" alt="CrickSL" style={styles.logo} />
-          <div style={styles.brand}>
-            <span style={styles.brandWhite}>Crick</span>
-            <span style={styles.brandGold}>SL</span>
-          </div>
+        <div style={s.logoRow}>
+          <img src="/cricksl-favicon.png" alt="CrickSL" style={s.logo} />
+          <span style={s.brand}>Crick<span style={s.gold}>SL</span></span>
         </div>
+        <p style={s.tagline}>T20 Cricket Decision Support System</p>
 
-        <h2 style={styles.title}>Welcome Back</h2>
-        <p style={styles.subtitle}>Sign in to access the analytics dashboard</p>
-
-        {error && <div className="alert alert-danger" style={{ marginBottom: '1rem' }}>{error}</div>}
-
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label className="form-label">Username</label>
-            <input
-              className="form-control"
-              type="text"
-              placeholder="Enter your username"
-              value={username}
-              onChange={e => setUsername(e.target.value)}
-              autoFocus
-            />
-          </div>
-
-          <div className="form-group">
-            <label className="form-label">Password</label>
-            <input
-              className="form-control"
-              type="password"
-              placeholder="Enter your password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-            />
-          </div>
-
-          <button
-            type="submit"
-            className="btn btn-gold btn-full"
-            disabled={loading}
-            style={{ marginTop: '0.5rem', padding: '0.85rem', fontSize: '1rem' }}
-          >
-            {loading ? '⏳ Signing in...' : '🔐 Sign In'}
+        {/* Tabs */}
+        <div style={s.tabs}>
+          <button style={{ ...s.tab, ...(tab === 'signin' ? s.tabActive : {}) }}
+            onClick={() => { setTab('signin'); resetForm() }}>
+            Sign In
           </button>
-        </form>
-
-        {/* Default credentials hint for demo */}
-        <div style={styles.hint}>
-          <div style={styles.hintTitle}>Demo Credentials</div>
-          <div style={styles.hintRow}>
-            <span style={styles.hintBadge}>Admin</span>
-            <span style={styles.hintText}>admin / CrickSL@2026</span>
-          </div>
-          <div style={styles.hintRow}>
-            <span style={{ ...styles.hintBadge, background: 'rgba(59,130,246,0.15)', color: '#60a5fa', border: '1px solid rgba(59,130,246,0.3)' }}>Analyst</span>
-            <span style={styles.hintText}>analyst / Analyst@2026</span>
-          </div>
+          <button style={{ ...s.tab, ...(tab === 'signup' ? s.tabActive : {}) }}
+            onClick={() => { setTab('signup'); resetForm() }}>
+            Create Account
+          </button>
         </div>
 
-        <p style={styles.footer}>PUSL3190 · Rajapaksha Banula · 10953523</p>
+        {error   && <div style={s.alertError}>{error}</div>}
+        {success && <div style={s.alertSuccess}>{success}</div>}
+
+        {/* Sign In */}
+        {tab === 'signin' && (
+          <form onSubmit={handleSignIn}>
+            <div className="form-group">
+              <label className="form-label">Username</label>
+              <input className="form-control" type="text" placeholder="Enter your username"
+                value={username} onChange={e => setUsername(e.target.value)} autoFocus />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Password</label>
+              <input className="form-control" type="password" placeholder="Enter your password"
+                value={password} onChange={e => setPassword(e.target.value)} />
+            </div>
+            <button type="submit" className="btn btn-gold btn-full" style={s.btn} disabled={loading}>
+              {loading ? 'Signing in...' : 'Sign In'}
+            </button>
+          </form>
+        )}
+
+        {/* Sign Up */}
+        {tab === 'signup' && (
+          <form onSubmit={handleSignUp}>
+            <div style={s.twoCol}>
+              <div className="form-group" style={{ flex: 1 }}>
+                <label className="form-label">Username</label>
+                <input className="form-control" type="text" placeholder="Choose a username"
+                  value={username} onChange={e => setUsername(e.target.value)} autoFocus />
+              </div>
+              <div className="form-group" style={{ flex: 1 }}>
+                <label className="form-label">Role</label>
+                <select className="form-control" value={role} onChange={e => setRole(e.target.value)}>
+                  <option value="analyst">Analyst</option>
+                  <option value="coach">Coach</option>
+                  <option value="player">Player</option>
+                </select>
+              </div>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Email Address</label>
+              <input className="form-control" type="email" placeholder="Enter your email address"
+                value={email} onChange={e => setEmail(e.target.value)} />
+            </div>
+            <div style={s.twoCol}>
+              <div className="form-group" style={{ flex: 1 }}>
+                <label className="form-label">Password</label>
+                <input className="form-control" type="password" placeholder="Min. 8 characters"
+                  value={password} onChange={e => setPassword(e.target.value)} />
+              </div>
+              <div className="form-group" style={{ flex: 1 }}>
+                <label className="form-label">Confirm Password</label>
+                <input className="form-control" type="password" placeholder="Re-enter password"
+                  value={confirmPwd} onChange={e => setConfirmPwd(e.target.value)} />
+              </div>
+            </div>
+            <div style={s.roleInfo}>
+              <span style={s.roleInfoIcon}>ℹ️</span>
+              <span>Admin accounts can only be created by existing administrators.</span>
+            </div>
+            <button type="submit" className="btn btn-gold btn-full" style={s.btn} disabled={loading}>
+              {loading ? 'Creating Account...' : 'Create Account'}
+            </button>
+          </form>
+        )}
+
+        {/* Footer */}
+        <div style={s.footer}>
+          <div style={s.divider} />
+          <p style={s.footerText}>© {new Date().getFullYear()} CrickSL. All rights reserved.</p>
+          <p style={s.footerSub}>Sri Lanka Cricket Analytics Platform</p>
+        </div>
       </div>
     </div>
   )
 }
 
-const styles = {
+const s = {
   page: {
-    minHeight: '100vh',
-    background: 'var(--bg-primary)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '1.5rem',
+    minHeight: '100vh', background: 'var(--bg-primary)',
+    display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem',
   },
   card: {
-    background: 'var(--bg-card)',
-    border: '1px solid var(--border)',
-    borderRadius: '16px',
-    padding: '2.5rem',
-    width: '100%',
-    maxWidth: '420px',
+    background: 'var(--bg-card)', border: '1px solid var(--border)',
+    borderRadius: '16px', padding: '2.5rem', width: '100%', maxWidth: '480px',
     boxShadow: '0 8px 40px rgba(0,0,0,0.5)',
   },
   logoRow: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '0.75rem',
-    marginBottom: '1.5rem',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    gap: '0.65rem', marginBottom: '0.4rem',
   },
-  logo: { width: '44px', height: '44px', borderRadius: '8px' },
-  brand: { fontFamily: "'Rajdhani', sans-serif", fontWeight: 700, fontSize: '2rem', letterSpacing: '1px' },
-  brandWhite: { color: '#f1f5f9' },
-  brandGold:  { color: '#f59e0b' },
-  title:    { fontFamily: "'Rajdhani', sans-serif", fontSize: '1.6rem', fontWeight: 700, textAlign: 'center', color: 'var(--text-primary)', marginBottom: '0.25rem' },
-  subtitle: { color: 'var(--text-secondary)', fontSize: '0.9rem', textAlign: 'center', marginBottom: '1.75rem' },
-  hint: {
-    marginTop: '1.5rem',
-    padding: '1rem',
-    background: 'rgba(255,255,255,0.03)',
-    border: '1px solid var(--border)',
-    borderRadius: '8px',
+  logo: { width: '42px', height: '42px', borderRadius: '8px' },
+  brand: {
+    fontFamily: "'Rajdhani', sans-serif", fontWeight: 700,
+    fontSize: '2rem', color: '#f1f5f9', letterSpacing: '0.04em',
   },
-  hintTitle: { fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '0.6rem' },
-  hintRow:   { display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.35rem' },
-  hintBadge: { fontSize: '0.7rem', fontWeight: 600, padding: '0.15rem 0.5rem', borderRadius: '4px', background: 'rgba(245,158,11,0.15)', color: '#fbbf24', border: '1px solid rgba(245,158,11,0.3)' },
-  hintText:  { fontSize: '0.82rem', color: 'var(--text-secondary)', fontFamily: 'monospace' },
-  footer:    { textAlign: 'center', fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '1.5rem' },
+  gold: { color: '#f59e0b' },
+  tagline: {
+    textAlign: 'center', color: 'var(--text-secondary)',
+    fontSize: '0.82rem', marginBottom: '1.75rem',
+  },
+  tabs: {
+    display: 'flex', gap: '4px', background: 'rgba(255,255,255,0.04)',
+    borderRadius: '10px', padding: '4px', marginBottom: '1.5rem',
+  },
+  tab: {
+    flex: 1, padding: '0.6rem', borderRadius: '7px', border: 'none',
+    cursor: 'pointer', fontSize: '0.88rem', fontWeight: 500,
+    background: 'transparent', color: 'var(--text-secondary)', transition: 'all 0.18s',
+  },
+  tabActive: {
+    background: 'var(--bg-secondary)', color: '#f59e0b',
+    boxShadow: '0 1px 4px rgba(0,0,0,0.3)',
+  },
+  alertError: {
+    background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)',
+    color: '#f87171', borderRadius: '8px', padding: '0.75rem 1rem',
+    fontSize: '0.85rem', marginBottom: '1rem',
+  },
+  alertSuccess: {
+    background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)',
+    color: '#4ade80', borderRadius: '8px', padding: '0.75rem 1rem',
+    fontSize: '0.85rem', marginBottom: '1rem',
+  },
+  twoCol: { display: 'flex', gap: '0.75rem' },
+  roleInfo: {
+    display: 'flex', gap: '0.5rem', alignItems: 'flex-start',
+    background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.2)',
+    borderRadius: '8px', padding: '0.65rem 0.85rem',
+    fontSize: '0.78rem', color: '#93c5fd', marginBottom: '1rem',
+  },
+  roleInfoIcon: { flexShrink: 0, fontSize: '0.85rem' },
+  btn: { marginTop: '0.25rem', padding: '0.85rem', fontSize: '0.95rem' },
+  footer: { marginTop: '1.75rem', textAlign: 'center' },
+  divider: { height: '1px', background: 'var(--border)', marginBottom: '1rem' },
+  footerText: { color: 'var(--text-muted)', fontSize: '0.75rem', marginBottom: '0.2rem' },
+  footerSub: { color: 'var(--text-muted)', fontSize: '0.7rem' },
 }
