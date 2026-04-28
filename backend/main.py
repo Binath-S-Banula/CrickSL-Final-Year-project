@@ -10,6 +10,7 @@ Base.metadata.create_all(bind=engine)
 from routers import venues, players, matches, predictions, reports
 from routers import weather, dls, xi_recommendation
 from routers.auth import router as auth_router
+from routers.player_dashboard import router as player_dashboard_router
 
 app = FastAPI(
     title="CrickSL API",
@@ -28,6 +29,7 @@ app.add_middleware(
 
 # ─── Routers ──────────────────────────────────────────────────────
 app.include_router(auth_router)          # /auth/*
+app.include_router(player_dashboard_router)  # /players/dashboard/*
 app.include_router(venues.router)        # /venues/*
 app.include_router(players.router)       # /players/*
 app.include_router(matches.router)       # /matches/*
