@@ -165,6 +165,23 @@ export default function Reports() {
                   sub="based on historical data" highlight />
               </div>
 
+              {/* Data Period Warning */}
+              {report.player_data_years > 3 && (
+                <div style={s.dataWarning}>
+                  <span style={s.warningIcon}>⚠️</span>
+                  <div>
+                    <strong style={{ color: '#fbbf24', fontSize: '0.88rem' }}>
+                      Limited Recent Match Data at This Venue
+                    </strong>
+                    <p style={{ margin: '0.2rem 0 0', fontSize: '0.82rem', color: '#94a3b8', lineHeight: 1.5 }}>
+                      No Sri Lanka matches found at this venue within the last 3 years in the current dataset.
+                      Player statistics below are based on the last <strong style={{ color: '#fbbf24' }}>{report.player_data_years} years</strong> of available data.
+                      Some retired players may appear. For the most current analysis, update the match dataset.
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {/* Charts Row 1 */}
               <div style={s.chartsRow}>
                 <div style={s.chartCard}>
@@ -366,4 +383,6 @@ const s = {
   th:         { padding: '0.65rem 0.75rem', textAlign: 'left', fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', borderBottom: '1px solid var(--border)' },
   td:         { padding: '0.7rem 0.75rem', fontSize: '0.85rem', color: 'var(--text-primary)' },
   reportFooter: { background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '1.25rem 1.5rem', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '0.85rem' },
+  dataWarning: { display: 'flex', gap: '0.85rem', alignItems: 'flex-start', background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: '10px', padding: '1rem 1.25rem', marginBottom: '1.5rem' },
+  warningIcon: { fontSize: '1.1rem', flexShrink: 0, marginTop: '0.1rem' },
 }

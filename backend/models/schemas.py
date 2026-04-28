@@ -244,6 +244,7 @@ class PreMatchReport(BaseModel):
     team1_top_bowlers: Optional[List[TopBowler]] = []
     team2_top_batters: Optional[List[TopBatter]] = []
     team2_top_bowlers: Optional[List[TopBowler]] = []
+    player_data_years: Optional[int] = 3
 
 
 # ─── Auth Schemas ─────────────────────────────────────────────────

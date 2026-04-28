@@ -191,10 +191,14 @@ def get_bowling_stats(db, player_name, venue_id=None):
 
 
 def get_top_batters_at_venue(db, team, venue_id, limit=5):
-    cutoff = datetime.now().date() - timedelta(days=3*365)
-    mids = [m.id for m in db.query(Match.id).filter(Match.venue_id==venue_id,
-        Match.date >= cutoff,
-        (Match.team1==team)|(Match.team2==team)).all()]
+    # Try 3-year window first, fall back to 5 years if no data
+    for years in [3, 5, 10]:
+        cutoff = datetime.now().date() - timedelta(days=years*365)
+        mids = [m.id for m in db.query(Match.id).filter(Match.venue_id==venue_id,
+            Match.date >= cutoff,
+            (Match.team1==team)|(Match.team2==team)).all()]
+        if mids:
+            break
     if not mids: return []
     d = db.query(Delivery).filter(Delivery.match_id.in_(mids),
         Delivery.batting_team==team, Delivery.is_wide==False).all()
@@ -211,14 +215,18 @@ def get_top_batters_at_venue(db, team, venue_id, limit=5):
             average=round(s["runs"]/ic,1) if ic else 0,
             strike_rate=round(s["runs"]/s["balls"]*100,1) if s["balls"] else 0))
     result.sort(key=lambda x:x.runs, reverse=True)
-    return result[:limit]
+    return result[:limit], years
 
 
 def get_top_bowlers_at_venue(db, team, venue_id, limit=5):
-    cutoff = datetime.now().date() - timedelta(days=3*365)
-    mids = [m.id for m in db.query(Match.id).filter(Match.venue_id==venue_id,
-        Match.date >= cutoff,
-        (Match.team1==team)|(Match.team2==team)).all()]
+    # Try 3-year window first, fall back to 5 years if no data
+    for years in [3, 5, 10]:
+        cutoff = datetime.now().date() - timedelta(days=years*365)
+        mids = [m.id for m in db.query(Match.id).filter(Match.venue_id==venue_id,
+            Match.date >= cutoff,
+            (Match.team1==team)|(Match.team2==team)).all()]
+        if mids:
+            break
     if not mids: return []
     d = db.query(Delivery).filter(Delivery.match_id.in_(mids), Delivery.bowling_team==team).all()
     stats = {}
@@ -236,4 +244,4 @@ def get_top_bowlers_at_venue(db, team, venue_id, limit=5):
             economy=round(s["runs"]/overs,2) if overs else 0,
             average=avg))
     result.sort(key=lambda x:x.wickets, reverse=True)
-    return result[:limit]
+    return result[:limit], years
