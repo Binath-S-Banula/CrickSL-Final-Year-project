@@ -8,6 +8,7 @@ import VenueWeather from './pages/VenueWeather'
 import PlayingXI from './pages/PlayingXI'
 import DLSCalculator from './pages/DLSCalculator'
 import AdminPanel from './pages/AdminPanel'
+import Reports from './pages/Reports'
 
 export default function App() {
   return (
@@ -23,6 +24,7 @@ export default function App() {
                 <Route path="/venue-weather" element={<VenueWeather />} />
                 <Route path="/playing-xi"    element={<PlayingXI />} />
                 <Route path="/dls"           element={<DLSCalculator />} />
+                <Route path="/reports"       element={<Reports />} />
                 <Route path="/admin"         element={<AdminPanel />} />
                 <Route path="*"              element={<Navigate to="/" replace />} />
               </Routes>
