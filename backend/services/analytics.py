@@ -231,7 +231,9 @@ def get_top_bowlers_at_venue(db, team, venue_id, limit=5):
     for name,s in stats.items():
         if s["balls"]<12: continue
         overs=s["balls"]/6
+        avg = round(s["runs"]/s["wickets"],1) if s["wickets"] else 0.0
         result.append(TopBowler(name=name, wickets=s["wickets"],
-            economy=round(s["runs"]/overs,2) if overs else 0))
+            economy=round(s["runs"]/overs,2) if overs else 0,
+            average=avg))
     result.sort(key=lambda x:x.wickets, reverse=True)
     return result[:limit]
