@@ -203,8 +203,12 @@ def get_top_batters_at_venue(db, team, venue_id, limit=5):
             years = y
             break
     if not mids: return [], years
-    d = db.query(Delivery).filter(Delivery.match_id.in_(mids),
-        Delivery.batting_team==team, Delivery.is_wide==False).all()
+    # Join with innings to get batting team — avoids relying on deliveries.batting_team
+    d = db.query(Delivery).join(Innings, Delivery.innings_id == Innings.id).filter(
+        Delivery.match_id.in_(mids),
+        Innings.batting_team == team,
+        Delivery.is_wide == False
+    ).all()
     stats = {}
     for x in d:
         if x.batter not in stats: stats[x.batter]={"runs":0,"balls":0,"innings":set()}
@@ -234,7 +238,11 @@ def get_top_bowlers_at_venue(db, team, venue_id, limit=5):
             years = y
             break
     if not mids: return [], years
-    d = db.query(Delivery).filter(Delivery.match_id.in_(mids), Delivery.bowling_team==team).all()
+    # Join with innings to get bowling team — avoids relying on deliveries.bowling_team
+    d = db.query(Delivery).join(Innings, Delivery.innings_id == Innings.id).filter(
+        Delivery.match_id.in_(mids),
+        Innings.bowling_team == team
+    ).all()
     stats = {}
     for x in d:
         if x.bowler not in stats: stats[x.bowler]={"runs":0,"balls":0,"wickets":0}
