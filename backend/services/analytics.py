@@ -192,9 +192,9 @@ def get_bowling_stats(db, player_name, venue_id=None):
 
 def get_top_batters_at_venue(db, team, venue_id, limit=5):
     # Try 3-year window first, fall back to 5 years if no data
-    years = 10
+    years = 5
     mids = []
-    for y in [3, 5, 10]:
+    for y in [3, 5]:
         cutoff = datetime.now().date() - timedelta(days=y*365)
         mids = [m.id for m in db.query(Match.id).filter(Match.venue_id==venue_id,
             Match.date >= cutoff,
@@ -223,9 +223,9 @@ def get_top_batters_at_venue(db, team, venue_id, limit=5):
 
 def get_top_bowlers_at_venue(db, team, venue_id, limit=5):
     # Try 3-year window first, fall back to 5 years if no data
-    years = 10
+    years = 5
     mids = []
-    for y in [3, 5, 10]:
+    for y in [3, 5]:
         cutoff = datetime.now().date() - timedelta(days=y*365)
         mids = [m.id for m in db.query(Match.id).filter(Match.venue_id==venue_id,
             Match.date >= cutoff,
