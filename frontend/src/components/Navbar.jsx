@@ -6,6 +6,7 @@ const navItems = [
   { to: '/venue-weather', label: 'Venue & Weather', icon: '🏟️' },
   { to: '/playing-xi',    label: 'Playing XI',      icon: '👥' },
   { to: '/dls',           label: 'DLS Calculator',  icon: '🌧️' },
+  { to: '/reports',       label: 'Reports',          icon: '📊' },
 ]
 
 const ROLE_COLORS = {
