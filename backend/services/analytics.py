@@ -192,14 +192,17 @@ def get_bowling_stats(db, player_name, venue_id=None):
 
 def get_top_batters_at_venue(db, team, venue_id, limit=5):
     # Try 3-year window first, fall back to 5 years if no data
-    for years in [3, 5, 10]:
-        cutoff = datetime.now().date() - timedelta(days=years*365)
+    years = 10
+    mids = []
+    for y in [3, 5, 10]:
+        cutoff = datetime.now().date() - timedelta(days=y*365)
         mids = [m.id for m in db.query(Match.id).filter(Match.venue_id==venue_id,
             Match.date >= cutoff,
             (Match.team1==team)|(Match.team2==team)).all()]
         if mids:
+            years = y
             break
-    if not mids: return []
+    if not mids: return [], years
     d = db.query(Delivery).filter(Delivery.match_id.in_(mids),
         Delivery.batting_team==team, Delivery.is_wide==False).all()
     stats = {}
@@ -220,14 +223,17 @@ def get_top_batters_at_venue(db, team, venue_id, limit=5):
 
 def get_top_bowlers_at_venue(db, team, venue_id, limit=5):
     # Try 3-year window first, fall back to 5 years if no data
-    for years in [3, 5, 10]:
-        cutoff = datetime.now().date() - timedelta(days=years*365)
+    years = 10
+    mids = []
+    for y in [3, 5, 10]:
+        cutoff = datetime.now().date() - timedelta(days=y*365)
         mids = [m.id for m in db.query(Match.id).filter(Match.venue_id==venue_id,
             Match.date >= cutoff,
             (Match.team1==team)|(Match.team2==team)).all()]
         if mids:
+            years = y
             break
-    if not mids: return []
+    if not mids: return [], years
     d = db.query(Delivery).filter(Delivery.match_id.in_(mids), Delivery.bowling_team==team).all()
     stats = {}
     for x in d:
