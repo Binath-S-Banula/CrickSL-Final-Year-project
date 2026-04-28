@@ -2,6 +2,7 @@
 analytics.py - CrickSL v2.0
 """
 from sqlalchemy.orm import Session
+from datetime import datetime, timedelta
 from models.db_models import Match, Innings, Delivery, Venue, Player
 from models.schemas import VenueStats, PhaseStats, BattingStats, BowlingStats, TopBatter, TopBowler
 from typing import List, Optional
@@ -190,7 +191,9 @@ def get_bowling_stats(db, player_name, venue_id=None):
 
 
 def get_top_batters_at_venue(db, team, venue_id, limit=5):
+    cutoff = datetime.now().date() - timedelta(days=3*365)
     mids = [m.id for m in db.query(Match.id).filter(Match.venue_id==venue_id,
+        Match.date >= cutoff,
         (Match.team1==team)|(Match.team2==team)).all()]
     if not mids: return []
     d = db.query(Delivery).filter(Delivery.match_id.in_(mids),
@@ -212,7 +215,9 @@ def get_top_batters_at_venue(db, team, venue_id, limit=5):
 
 
 def get_top_bowlers_at_venue(db, team, venue_id, limit=5):
+    cutoff = datetime.now().date() - timedelta(days=3*365)
     mids = [m.id for m in db.query(Match.id).filter(Match.venue_id==venue_id,
+        Match.date >= cutoff,
         (Match.team1==team)|(Match.team2==team)).all()]
     if not mids: return []
     d = db.query(Delivery).filter(Delivery.match_id.in_(mids), Delivery.bowling_team==team).all()
