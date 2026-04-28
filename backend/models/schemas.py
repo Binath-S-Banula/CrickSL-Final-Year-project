@@ -218,17 +218,17 @@ class WeatherResponse(BaseModel):
 
 class TopBatter(BaseModel):
     name: str
-    matches: int
-    runs: int
-    average: float
-    strike_rate: float
+    matches: int = 0
+    runs: int = 0
+    average: float = 0.0
+    strike_rate: float = 0.0
 
 class TopBowler(BaseModel):
     name: str
-    matches: int
-    wickets: int
-    economy: float
-    average: float
+    matches: int = 0
+    wickets: int = 0
+    economy: float = 0.0
+    average: float = 0.0
 
 
 # ─── Reports Schemas ──────────────────────────────────────────────

@@ -69,6 +69,8 @@ class Delivery(Base):
     over_number = Column(Integer)
     ball_number = Column(Integer)
     phase = Column(String)
+    batting_team = Column(String, nullable=True)
+    bowling_team = Column(String, nullable=True)
     batter = Column(String)
     bowler = Column(String)
     non_striker = Column(String)
