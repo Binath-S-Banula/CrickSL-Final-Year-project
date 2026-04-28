@@ -21,14 +21,15 @@ class PhaseStats(BaseModel):
     phase: str
     avg_runs: float
     avg_wickets: float
-    run_rate: float
+    run_rate: float = 0.0
+    total_deliveries: int = 0
 
 class VenueStats(BaseModel):
     venue_id: int
     venue_name: str
     total_matches: int
-    avg_first_innings: float
-    avg_second_innings: float
+    avg_first_innings_score: float
+    avg_second_innings_score: float
     bat_first_wins: int
     chase_wins: int
     bat_first_win_pct: float

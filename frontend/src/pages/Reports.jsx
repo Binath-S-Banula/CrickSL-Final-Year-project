@@ -147,7 +147,7 @@ export default function Reports() {
               />
               <SummaryCard
                 icon="📈" label="Avg 1st Innings"
-                value={report.venue_stats?.avg_first_innings?.toFixed(0) || '—'}
+                value={report.venue_stats?.avg_first_innings_score?.toFixed(0) || '—'}
                 sub="runs at this venue"
               />
               <SummaryCard
