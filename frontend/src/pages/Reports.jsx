@@ -46,7 +46,7 @@ export default function Reports() {
     if (!venue || !team2) { setError('Please select a venue and opponent team'); return }
     setLoading(true); setError(''); setReport(null)
     try {
-      const res = await api.get('/reports/prematch', {
+      const res = await api.get('/prematch', {
         params: { venue_name: venue, team1, team2 }
       })
       setReport(res.data)
@@ -70,7 +70,7 @@ export default function Reports() {
     { name: 'Chase Wins',     value: report.venue_stats.chase_wins || 0 },
   ] : []
 
-  const batterData = (report?.top_batters || []).slice(0, 6).map(b => ({
+  const batterData = (report?.team1_top_batters || []).slice(0, 6).map(b => ({
     name:          b.name.split(' ').slice(-1)[0],
     fullName:      b.name,
     'Strike Rate': parseFloat(b.strike_rate?.toFixed(1) || 0),
@@ -78,7 +78,7 @@ export default function Reports() {
     'Runs':        b.runs || 0,
   }))
 
-  const bowlerData = (report?.top_bowlers || []).slice(0, 6).map(b => ({
+  const bowlerData = (report?.team1_top_bowlers || []).slice(0, 6).map(b => ({
     name:      b.name.split(' ').slice(-1)[0],
     fullName:  b.name,
     'Economy': parseFloat(b.economy?.toFixed(2) || 0),
@@ -251,8 +251,8 @@ export default function Reports() {
 
             {/* Player Tables */}
             <div style={s.chartsRow}>
-              <PlayerTable title="Top Batters" players={report.top_batters || []} type="batting" />
-              <PlayerTable title="Top Bowlers" players={report.top_bowlers || []} type="bowling" />
+              <PlayerTable title="Top Batters" players={report.team1_top_batters || []} type="batting" />
+              <PlayerTable title="Top Bowlers" players={report.team1_top_bowlers || []} type="bowling" />
             </div>
 
             {/* Footer */}

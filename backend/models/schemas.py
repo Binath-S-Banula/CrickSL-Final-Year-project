@@ -238,10 +238,11 @@ class PreMatchReport(BaseModel):
     team2: str
     venue_stats: Optional[VenueStats] = None
     phase_stats: Optional[List[PhaseStats]] = []
-    top_batters: Optional[List[TopBatter]] = []
-    top_bowlers: Optional[List[TopBowler]] = []
     toss_recommendation: Optional[str] = None
-    weather_summary: Optional[Dict[str, Any]] = {}
+    team1_top_batters: Optional[List[TopBatter]] = []
+    team1_top_bowlers: Optional[List[TopBowler]] = []
+    team2_top_batters: Optional[List[TopBatter]] = []
+    team2_top_bowlers: Optional[List[TopBowler]] = []
 
 
 # ─── Auth Schemas ─────────────────────────────────────────────────
