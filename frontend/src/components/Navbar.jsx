@@ -7,6 +7,7 @@ const navItems = [
   { to: '/playing-xi',    label: 'Playing XI',      icon: '👥' },
   { to: '/dls',           label: 'DLS Calculator',  icon: '🌧️' },
   { to: '/reports',       label: 'Reports',          icon: '📊' },
+  { to: '/players',       label: 'Players',          icon: '🏏' },
 ]
 
 const ROLE_COLORS = {

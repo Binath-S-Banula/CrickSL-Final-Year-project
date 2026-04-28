@@ -8,6 +8,7 @@ import VenueWeather from './pages/VenueWeather'
 import PlayingXI from './pages/PlayingXI'
 import DLSCalculator from './pages/DLSCalculator'
 import AdminPanel from './pages/AdminPanel'
+import PlayerDashboard from './pages/PlayerDashboard'
 import Reports from './pages/Reports'
 
 export default function App() {
