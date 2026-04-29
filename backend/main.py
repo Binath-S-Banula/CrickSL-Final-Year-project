@@ -28,16 +28,16 @@ app.add_middleware(
 )
 
 # ─── Routers ──────────────────────────────────────────────────────
-app.include_router(auth_router)          # /auth/*
-app.include_router(player_dashboard_router)  # /players/dashboard/*
-app.include_router(venues.router)        # /venues/*
-app.include_router(players.router)       # /players/*
-app.include_router(matches.router)       # /matches/*
-app.include_router(predictions.router)   # /predict/*
-app.include_router(reports.router)       # /reports/*
-app.include_router(weather.router)       # /weather/*
-app.include_router(dls.router)           # /dls/*
-app.include_router(xi_recommendation.router)  # /xi/*
+app.include_router(auth_router)                              # /auth/*
+app.include_router(player_dashboard_router)                  # /players/dashboard/*
+app.include_router(venues.router,           prefix="/venues")     # /venues/*
+app.include_router(players.router,          prefix="/players")    # /players/*
+app.include_router(matches.router,          prefix="/matches")    # /matches/*
+app.include_router(predictions.router,      prefix="/predict")    # /predict/*
+app.include_router(reports.router)                           # /prematch (no prefix)
+app.include_router(weather.router,          prefix="/weather")    # /weather/*
+app.include_router(dls.router,              prefix="/dls")        # /dls/*
+app.include_router(xi_recommendation.router, prefix="/xi")        # /xi/*
 
 
 @app.get("/")
