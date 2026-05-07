@@ -1,467 +1,818 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect } from "react";
 import {
   PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer,
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, RadarChart,
-  Radar, PolarGrid, PolarAngleAxis,
-} from 'recharts'
-import api from '../api/api'
+  BarChart, Bar, XAxis, YAxis, CartesianGrid
+} from "recharts";
+import api from "../api/api";
 
-const ROLES = [
-  { key: 'all',        label: 'All Players' },
-  { key: 'batter',     label: 'Batters' },
-  { key: 'bowler',     label: 'Bowlers' },
-  { key: 'allrounder', label: 'All-Rounders' },
-  { key: 'keeper',     label: 'Wicket Keepers' },
-]
+const COLORS = ["#f59e0b", "#1e40af", "#10b981", "#ef4444", "#8b5cf6", "#06b6d4"];
 
-const ERAS = [
-  { key: 0,  label: 'All Time' },
-  { key: 3,  label: 'Last 3 Years' },
-  { key: 5,  label: 'Last 5 Years' },
-  { key: 10, label: 'Last 10 Years' },
-]
+const ROLE_OPTIONS = [
+  { value: "all", label: "All Players" },
+  { value: "batter", label: "Batters" },
+  { value: "bowler", label: "Bowlers" },
+  { value: "all rounder", label: "All-Rounders" },
+  { value: "wicket keeper batter", label: "Wicket Keepers" },
+];
 
-const PIE_COLORS = ['#f59e0b','#3b82f6','#10b981','#ef4444','#8b5cf6','#ec4899','#14b8a6']
+const ERA_OPTIONS = [
+  { value: 0, label: "All Time" },
+  { value: 1, label: "Last 1 Year" },
+  { value: 3, label: "Last 3 Years" },
+  { value: 5, label: "Last 5 Years" },
+  { value: 10, label: "Last 10 Years" },
+];
 
-const tooltipStyle = {
-  background: '#0f1929', border: '1px solid #1e3a5f',
-  borderRadius: '8px', color: '#f1f5f9', fontSize: '0.82rem',
-}
+const s = {
+  page: {
+    minHeight: "100vh",
+    background: "#0f172a",
+    padding: "2rem",
+    fontFamily: "'Inter', sans-serif",
+    color: "#e2e8f0",
+  },
+  header: {
+    marginBottom: "2rem",
+  },
+  title: {
+    fontFamily: "'Rajdhani', sans-serif",
+    fontSize: "2rem",
+    fontWeight: 700,
+    color: "#f59e0b",
+    marginBottom: "0.25rem",
+  },
+  subtitle: {
+    color: "#94a3b8",
+    fontSize: "0.9rem",
+  },
+  filterCard: {
+    background: "#1e293b",
+    border: "1px solid #334155",
+    borderRadius: "12px",
+    padding: "1.5rem",
+    marginBottom: "1.5rem",
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr 2fr",
+    gap: "1rem",
+    alignItems: "end",
+  },
+  label: {
+    display: "block",
+    fontSize: "0.75rem",
+    fontWeight: 600,
+    color: "#94a3b8",
+    textTransform: "uppercase",
+    letterSpacing: "0.05em",
+    marginBottom: "0.5rem",
+  },
+  select: {
+    width: "100%",
+    background: "#0f172a",
+    border: "1px solid #475569",
+    borderRadius: "8px",
+    color: "#e2e8f0",
+    padding: "0.6rem 0.8rem",
+    fontSize: "0.9rem",
+    outline: "none",
+    cursor: "pointer",
+  },
+  card: {
+    background: "#1e293b",
+    border: "1px solid #334155",
+    borderRadius: "12px",
+    padding: "1.5rem",
+    marginBottom: "1.5rem",
+  },
+  cardTitle: {
+    fontFamily: "'Rajdhani', sans-serif",
+    fontSize: "1.1rem",
+    fontWeight: 700,
+    color: "#f59e0b",
+    marginBottom: "1rem",
+    borderBottom: "1px solid #334155",
+    paddingBottom: "0.75rem",
+  },
+  statsGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))",
+    gap: "1rem",
+  },
+  statBox: {
+    background: "#0f172a",
+    border: "1px solid #334155",
+    borderRadius: "8px",
+    padding: "1rem",
+    textAlign: "center",
+  },
+  statValue: {
+    fontFamily: "'Rajdhani', sans-serif",
+    fontSize: "1.6rem",
+    fontWeight: 700,
+    color: "#f59e0b",
+    display: "block",
+  },
+  statLabel: {
+    fontSize: "0.7rem",
+    color: "#94a3b8",
+    textTransform: "uppercase",
+    letterSpacing: "0.05em",
+  },
+  playerIdentity: {
+    background: "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)",
+    border: "1px solid #1e40af",
+    borderRadius: "12px",
+    padding: "1.5rem",
+    marginBottom: "1.5rem",
+    display: "flex",
+    alignItems: "center",
+    gap: "1.5rem",
+  },
+  playerAvatar: {
+    width: "64px",
+    height: "64px",
+    borderRadius: "50%",
+    background: "linear-gradient(135deg, #1e40af, #f59e0b)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: "1.5rem",
+    fontWeight: 700,
+    color: "#fff",
+    fontFamily: "'Rajdhani', sans-serif",
+    flexShrink: 0,
+  },
+  playerName: {
+    fontFamily: "'Rajdhani', sans-serif",
+    fontSize: "1.6rem",
+    fontWeight: 700,
+    color: "#f1f5f9",
+    margin: 0,
+  },
+  playerMeta: {
+    color: "#94a3b8",
+    fontSize: "0.85rem",
+    marginTop: "0.25rem",
+  },
+  badge: (color) => ({
+    display: "inline-block",
+    padding: "0.2rem 0.6rem",
+    borderRadius: "20px",
+    fontSize: "0.7rem",
+    fontWeight: 700,
+    textTransform: "uppercase",
+    background: color === "active" ? "rgba(16,185,129,0.15)" : "rgba(245,158,11,0.15)",
+    color: color === "active" ? "#10b981" : "#f59e0b",
+    border: `1px solid ${color === "active" ? "#10b981" : "#f59e0b"}`,
+    marginLeft: "0.5rem",
+  }),
+  faultPanel: {
+    background: "rgba(239,68,68,0.05)",
+    border: "1px solid rgba(239,68,68,0.3)",
+    borderRadius: "8px",
+    padding: "1rem",
+    marginBottom: "1rem",
+  },
+  faultTitle: {
+    color: "#ef4444",
+    fontWeight: 700,
+    fontSize: "0.85rem",
+    marginBottom: "0.75rem",
+    textTransform: "uppercase",
+    letterSpacing: "0.05em",
+  },
+  faultGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
+    gap: "0.75rem",
+  },
+  faultItem: {
+    textAlign: "center",
+  },
+  faultValue: {
+    fontSize: "1.4rem",
+    fontWeight: 700,
+    color: "#ef4444",
+    fontFamily: "'Rajdhani', sans-serif",
+    display: "block",
+  },
+  faultLabel: {
+    fontSize: "0.7rem",
+    color: "#94a3b8",
+    textTransform: "uppercase",
+  },
+  chartsGrid: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gap: "1.5rem",
+    marginBottom: "1.5rem",
+  },
+  table: {
+    width: "100%",
+    borderCollapse: "collapse",
+    fontSize: "0.85rem",
+  },
+  th: {
+    textAlign: "left",
+    padding: "0.6rem 0.8rem",
+    background: "#0f172a",
+    color: "#94a3b8",
+    fontSize: "0.7rem",
+    textTransform: "uppercase",
+    letterSpacing: "0.05em",
+    borderBottom: "1px solid #334155",
+  },
+  td: {
+    padding: "0.6rem 0.8rem",
+    borderBottom: "1px solid #1e293b",
+    color: "#cbd5e1",
+  },
+  playerListGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
+    gap: "0.75rem",
+  },
+  playerCard: (selected) => ({
+    background: selected ? "rgba(245,158,11,0.1)" : "#0f172a",
+    border: selected ? "1px solid #f59e0b" : "1px solid #334155",
+    borderRadius: "8px",
+    padding: "0.75rem 1rem",
+    cursor: "pointer",
+    transition: "all 0.2s",
+  }),
+  playerCardName: {
+    fontWeight: 600,
+    color: "#e2e8f0",
+    fontSize: "0.9rem",
+  },
+  playerCardMeta: {
+    fontSize: "0.7rem",
+    color: "#64748b",
+    marginTop: "0.2rem",
+  },
+  loading: {
+    textAlign: "center",
+    padding: "3rem",
+    color: "#64748b",
+  },
+  errorBox: {
+    background: "rgba(239,68,68,0.1)",
+    border: "1px solid rgba(239,68,68,0.3)",
+    borderRadius: "8px",
+    padding: "1rem",
+    color: "#fca5a5",
+    fontSize: "0.9rem",
+    marginBottom: "1rem",
+  },
+  emptyState: {
+    textAlign: "center",
+    padding: "2rem",
+    color: "#64748b",
+    background: "#0f172a",
+    borderRadius: "8px",
+    border: "1px dashed #334155",
+  },
+  tabRow: {
+    display: "flex",
+    gap: "0.5rem",
+    marginBottom: "1rem",
+  },
+  tab: (active) => ({
+    padding: "0.4rem 1rem",
+    borderRadius: "6px",
+    border: active ? "1px solid #f59e0b" : "1px solid #334155",
+    background: active ? "rgba(245,158,11,0.1)" : "transparent",
+    color: active ? "#f59e0b" : "#64748b",
+    cursor: "pointer",
+    fontSize: "0.85rem",
+    fontWeight: 600,
+  }),
+};
 
 export default function PlayerDashboard() {
-  const [role, setRole]       = useState('all')
-  const [years, setYears]     = useState(0)
-  const [players, setPlayers] = useState([])
-  const [selected, setSelected] = useState('')
-  const [stats, setStats]     = useState(null)
-  const [loading, setLoading] = useState(false)
-  const [listLoading, setListLoading] = useState(false)
-  const [activeTab, setActiveTab] = useState('batting')
+  const [role, setRole] = useState("all");
+  const [years, setYears] = useState(3);
+  const [playerList, setPlayerList] = useState([]);
+  const [selectedPlayer, setSelectedPlayer] = useState(null);
+  const [stats, setStats] = useState(null);
+  const [loadingList, setLoadingList] = useState(false);
+  const [loadingStats, setLoadingStats] = useState(false);
+  const [listError, setListError] = useState(null);
+  const [statsError, setStatsError] = useState(null);
+  const [activeTab, setActiveTab] = useState("batting");
 
-  // Load player list when role or years changes
+  // Load player list when filters change
   useEffect(() => {
-    setListLoading(true)
-    setSelected('')
-    setStats(null)
-    api.get('/players/dashboard/list', { params: { role, years } })
-      .then(r => setPlayers(r.data))
-      .catch(() => setPlayers([]))
-      .finally(() => setListLoading(false))
-  }, [role, years])
+    loadPlayerList();
+  }, [role, years]);
 
-  // Load player stats when selected
-  useEffect(() => {
-    if (!selected) return
-    setLoading(true)
-    setStats(null)
-    api.get(`/players/dashboard/${encodeURIComponent(selected)}`, { params: { years } })
-      .then(r => { setStats(r.data); setActiveTab('batting') })
-      .catch(() => setStats(null))
-      .finally(() => setLoading(false))
-  }, [selected, years])
+  async function loadPlayerList() {
+    setLoadingList(true);
+    setListError(null);
+    setPlayerList([]);
+    setSelectedPlayer(null);
+    setStats(null);
+    try {
+      const res = await api.get(`/players/dashboard/list?role=${encodeURIComponent(role)}&years=${years}`);
+      const data = res.data;
+      if (Array.isArray(data)) {
+        setPlayerList(data);
+      } else if (data && Array.isArray(data.players)) {
+        setPlayerList(data.players);
+      } else {
+        setPlayerList([]);
+      }
+    } catch (err) {
+      setListError("Could not load player list. Make sure the backend is running.");
+    } finally {
+      setLoadingList(false);
+    }
+  }
 
-  const activePlayers = players.filter(p => p.badge === 'Active')
-  const legendPlayers = players.filter(p => p.badge === 'Legend')
+  async function loadStats(playerName) {
+    setSelectedPlayer(playerName);
+    setStats(null);
+    setStatsError(null);
+    setLoadingStats(true);
+    setActiveTab("batting");
+    try {
+      const res = await api.get(`/players/dashboard/stats?name=${encodeURIComponent(playerName)}&years=${years}`);
+      setStats(res.data || {});
+    } catch (err) {
+      setStatsError(`Could not load stats for ${playerName}.`);
+    } finally {
+      setLoadingStats(false);
+    }
+  }
 
-  const bat = stats?.batting
-  const bowl = stats?.bowling
+  // Safe helpers
+  const safeNum = (v, decimals = 1) => {
+    const n = Number(v);
+    return isNaN(n) ? "—" : n.toFixed(decimals);
+  };
 
-  const dismissalData = bat ? Object.entries(bat.dismissal_types || {})
-    .map(([name, value]) => ({ name: name.replace(/_/g,' '), value }))
-    .sort((a,b) => b.value - a.value) : []
+  const initials = (name) => {
+    if (!name) return "?";
+    const parts = name.split(" ");
+    return parts.length > 1 ? parts[0][0] + parts[parts.length - 1][0] : name[0];
+  };
 
-  const scoreDistData = bat ? Object.entries(bat.score_distribution || {})
-    .map(([name, value]) => ({ name, value })) : []
+  // Dismissal chart data
+  const dismissalData = () => {
+    if (!stats?.dismissals) return [];
+    return Object.entries(stats.dismissals)
+      .filter(([, v]) => v > 0)
+      .map(([k, v]) => ({ name: k.charAt(0).toUpperCase() + k.slice(1), value: v }));
+  };
 
-  const phaseData = bat ? ['powerplay','middle','death'].map(ph => ({
-    phase: ph.charAt(0).toUpperCase() + ph.slice(1),
-    'Strike Rate': bat.phase_strike_rate?.[ph] || 0,
-    'Dismissals': bat.phase_dismissals?.[ph] || 0,
-  })) : []
+  // Score distribution chart data
+  const scoreDistData = () => {
+    if (!stats?.score_distribution) return [];
+    return Object.entries(stats.score_distribution).map(([range, count]) => ({
+      range,
+      count: Number(count) || 0,
+    }));
+  };
 
-  const bowlPhaseData = bowl ? ['powerplay','middle','death'].map(ph => ({
-    phase: ph.charAt(0).toUpperCase() + ph.slice(1),
-    'Economy': bowl.phase_economy?.[ph] || 0,
-  })).filter(d => d.Economy > 0) : []
+  // Phase batting data
+  const phaseData = () => {
+    if (!stats?.phase_batting) return [];
+    return Object.entries(stats.phase_batting).map(([phase, d]) => ({
+      phase: phase.charAt(0).toUpperCase() + phase.slice(1),
+      "Strike Rate": Number(d?.strike_rate) || 0,
+      "Dismissals": Number(d?.dismissals) || 0,
+    }));
+  };
 
-  const wicketTypesData = bowl ? Object.entries(bowl.wicket_types || {})
-    .map(([name, value]) => ({ name, value })) : []
+  // Phase bowling data
+  const phaseBowlingData = () => {
+    if (!stats?.phase_bowling) return [];
+    return Object.entries(stats.phase_bowling).map(([phase, d]) => ({
+      phase: phase.charAt(0).toUpperCase() + phase.slice(1),
+      "Economy": Number(d?.economy) || 0,
+      "Wickets": Number(d?.wickets) || 0,
+    }));
+  };
 
-  const hasbowling = bowl && (bowl.wickets > 0 || bowl.innings > 0)
-  const hasBatting = bat && bat.innings > 0
+  const wicketTypeData = () => {
+    if (!stats?.wicket_types) return [];
+    return Object.entries(stats.wicket_types)
+      .filter(([, v]) => v > 0)
+      .map(([k, v]) => ({ name: k.charAt(0).toUpperCase() + k.slice(1), value: v }));
+  };
+
+  const hasBatting = stats?.batting_overview && Number(stats.batting_overview.innings || 0) > 0;
+  const hasBowling = stats?.bowling_overview && Number(stats.bowling_overview.wickets || 0) > 0;
+  const isAllRounder = hasBatting && hasBowling;
+  const playerStatus = stats?.is_active ? "active" : "legend";
 
   return (
     <div style={s.page}>
-      <div style={s.container}>
-
-        {/* Header */}
-        <div style={s.header}>
-          <h1 style={s.title}>Player Analytics</h1>
-          <p style={s.subtitle}>Explore performance stats for Sri Lanka T20I players — past and present</p>
+      {/* Header */}
+      <div style={s.header}>
+        <div style={s.title}>🏏 Player Analytics Dashboard</div>
+        <div style={s.subtitle}>
+          Role-based, era-filtered performance analysis for all Sri Lanka T20I players
         </div>
+      </div>
 
-        {/* Filters */}
-        <div style={s.filtersCard}>
-          {/* Step 1 — Role */}
-          <div style={s.filterSection}>
-            <div style={s.filterLabel}>1. Select Role</div>
-            <div style={s.btnGroup}>
-              {ROLES.map(r => (
-                <button key={r.key} style={{ ...s.filterBtn, ...(role === r.key ? s.filterBtnActive : {}) }}
-                  onClick={() => setRole(r.key)}>{r.label}</button>
-              ))}
-            </div>
-          </div>
-
-          {/* Step 2 — Era */}
-          <div style={s.filterSection}>
-            <div style={s.filterLabel}>2. Select Era</div>
-            <div style={s.btnGroup}>
-              {ERAS.map(e => (
-                <button key={e.key} style={{ ...s.filterBtn, ...(years === e.key ? s.filterBtnActive : {}) }}
-                  onClick={() => setYears(e.key)}>{e.label}</button>
-              ))}
-            </div>
-          </div>
-
-          {/* Step 3 — Player */}
-          <div style={s.filterSection}>
-            <div style={s.filterLabel}>3. Select Player</div>
-            {listLoading ? (
-              <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Loading players...</div>
-            ) : (
-              <select style={s.select} value={selected} onChange={e => setSelected(e.target.value)}>
-                <option value="">Choose a player...</option>
-                {activePlayers.length > 0 && (
-                  <optgroup label="⚡ Active Players">
-                    {activePlayers.map(p => (
-                      <option key={p.name} value={p.name}>{p.name} — {p.role}</option>
-                    ))}
-                  </optgroup>
-                )}
-                {legendPlayers.length > 0 && (
-                  <optgroup label="🏛 Legends">
-                    {legendPlayers.map(p => (
-                      <option key={p.name} value={p.name}>{p.name} — {p.role}</option>
-                    ))}
-                  </optgroup>
-                )}
-              </select>
-            )}
-            <div style={s.playerCount}>
-              {players.length > 0 && `${activePlayers.length} active · ${legendPlayers.length} legends`}
-            </div>
+      {/* Filters */}
+      <div style={s.filterCard}>
+        <div>
+          <label style={s.label}>Role Filter</label>
+          <select style={s.select} value={role} onChange={(e) => setRole(e.target.value)}>
+            {ROLE_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>{o.label}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label style={s.label}>Era Filter</label>
+          <select style={s.select} value={years} onChange={(e) => setYears(Number(e.target.value))}>
+            {ERA_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>{o.label}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label style={s.label}>
+            Players Found: {loadingList ? "..." : playerList.length}
+          </label>
+          <div style={{ color: "#64748b", fontSize: "0.8rem", paddingTop: "0.4rem" }}>
+            {years === 0
+              ? "Showing all historical players (Legends included)"
+              : `Active within last ${years} year${years > 1 ? "s" : ""}`}
           </div>
         </div>
+      </div>
 
-        {loading && (
-          <div style={s.loadingCard}>
-            <div style={s.spinner} />
-            <p style={{ color: 'var(--text-secondary)' }}>Loading player stats...</p>
+      {/* Error */}
+      {listError && <div style={s.errorBox}>⚠️ {listError}</div>}
+
+      {/* Player List */}
+      <div style={s.card}>
+        <div style={s.cardTitle}>Select a Player</div>
+        {loadingList ? (
+          <div style={s.loading}>Loading players...</div>
+        ) : playerList.length === 0 ? (
+          <div style={s.emptyState}>
+            No players found for the selected filters. Try "All Time" era or change the role.
+          </div>
+        ) : (
+          <div style={s.playerListGrid}>
+            {playerList.map((p) => {
+              const name = typeof p === "string" ? p : (p.name || p.player_name || String(p));
+              const pRole = typeof p === "object" ? (p.role || p.player_role || "") : "";
+              const isAct = typeof p === "object" ? !!p.is_active : true;
+              return (
+                <div
+                  key={name}
+                  style={s.playerCard(selectedPlayer === name)}
+                  onClick={() => loadStats(name)}
+                >
+                  <div style={s.playerCardName}>{name}</div>
+                  <div style={s.playerCardMeta}>
+                    {pRole && <span>{pRole}</span>}
+                    {typeof p === "object" && (
+                      <span style={{
+                        marginLeft: pRole ? "0.5rem" : 0,
+                        color: isAct ? "#10b981" : "#f59e0b",
+                        fontWeight: 600,
+                      }}>
+                        {isAct ? "⚡ Active" : "🏛 Legend"}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
+      </div>
 
-        {stats && !loading && (
-          <>
-            {/* Player Identity */}
-            <div style={s.identityCard}>
-              <div style={s.avatarLarge}>{stats.player_name[0]}</div>
-              <div>
-                <div style={s.playerName}>{stats.player_name}</div>
-                <div style={s.playerMeta}>
-                  <span style={stats.badge === 'Active' ? s.badgeActive : s.badgeLegend}>
-                    {stats.badge === 'Active' ? '⚡ Active' : '🏛 Legend'}
-                  </span>
-                  <span style={s.metaItem}>{stats.role}</span>
-                  {stats.batting_style && <span style={s.metaItem}>{stats.batting_style}</span>}
-                  {stats.bowling_style && <span style={s.metaItem}>{stats.bowling_style}</span>}
+      {/* Stats Panel */}
+      {loadingStats && <div style={s.loading}>⏳ Loading stats for {selectedPlayer}...</div>}
+      {statsError && <div style={s.errorBox}>⚠️ {statsError}</div>}
+
+      {stats && !loadingStats && (
+        <>
+          {/* Player Identity */}
+          <div style={s.playerIdentity}>
+            <div style={s.playerAvatar}>{initials(selectedPlayer)}</div>
+            <div>
+              <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: "0.5rem" }}>
+                <h2 style={s.playerName}>{selectedPlayer}</h2>
+                <span style={s.badge(playerStatus)}>
+                  {playerStatus === "active" ? "⚡ Active" : "🏛 Legend"}
+                </span>
+              </div>
+              <div style={s.playerMeta}>
+                {stats.role && <span>🎯 {stats.role}</span>}
+                {stats.batting_style && <span> · 🏏 {stats.batting_style}</span>}
+                {stats.bowling_style && <span> · ⚡ {stats.bowling_style}</span>}
+                <span> · 🇱🇰 Sri Lanka</span>
+              </div>
+              {stats.last_match_date && (
+                <div style={{ ...s.playerMeta, marginTop: "0.2rem" }}>
+                  Last match: {stats.last_match_date}
                 </div>
-                {stats.last_active && (
-                  <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: '0.25rem' }}>
-                    Last active: {stats.last_active}
-                    {years > 0 ? ` · Showing last ${years} years` : ' · All time data'}
-                  </div>
-                )}
-              </div>
+              )}
             </div>
+          </div>
 
-            {/* Tabs */}
-            {hasBatting && hasbowling && (
-              <div style={s.tabs}>
-                <button style={{ ...s.tab, ...(activeTab === 'batting' ? s.tabActive : {}) }}
-                  onClick={() => setActiveTab('batting')}>🏏 Batting Analysis</button>
-                <button style={{ ...s.tab, ...(activeTab === 'bowling' ? s.tabActive : {}) }}
-                  onClick={() => setActiveTab('bowling')}>🎳 Bowling Analysis</button>
-              </div>
-            )}
+          {/* Tab selector for All-Rounders */}
+          {isAllRounder && (
+            <div style={s.tabRow}>
+              <button style={s.tab(activeTab === "batting")} onClick={() => setActiveTab("batting")}>
+                🏏 Batting
+              </button>
+              <button style={s.tab(activeTab === "bowling")} onClick={() => setActiveTab("bowling")}>
+                ⚡ Bowling
+              </button>
+            </div>
+          )}
 
-            {/* ─── BATTING SECTION ─── */}
-            {(activeTab === 'batting' || !hasbowling) && hasBatting && (
-              <>
-                {/* Batting Overview */}
+          {/* BATTING SECTION */}
+          {hasBatting && (activeTab === "batting" || !isAllRounder) && (
+            <>
+              {/* Batting Overview */}
+              <div style={s.card}>
+                <div style={s.cardTitle}>Batting Overview</div>
                 <div style={s.statsGrid}>
                   {[
-                    { label: 'Innings', value: bat.innings },
-                    { label: 'Total Runs', value: bat.runs, color: '#f59e0b' },
-                    { label: 'Average', value: bat.average },
-                    { label: 'Strike Rate', value: bat.strike_rate, color: '#10b981' },
-                    { label: 'Highest Score', value: bat.highest_score, color: '#f59e0b' },
-                    { label: '50s / 100s', value: `${bat.fifties} / ${bat.hundreds}` },
-                  ].map(c => (
-                    <div key={c.label} style={s.statCard}>
-                      <div style={{ ...s.statValue, color: c.color || 'var(--text-primary)' }}>{c.value}</div>
-                      <div style={s.statLabel}>{c.label}</div>
+                    { label: "Matches", value: stats.batting_overview?.matches, dec: 0 },
+                    { label: "Innings", value: stats.batting_overview?.innings, dec: 0 },
+                    { label: "Total Runs", value: stats.batting_overview?.total_runs, dec: 0 },
+                    { label: "Average", value: stats.batting_overview?.average },
+                    { label: "Strike Rate", value: stats.batting_overview?.strike_rate },
+                    { label: "Highest Score", value: stats.batting_overview?.highest_score, dec: 0 },
+                    { label: "50s", value: stats.batting_overview?.fifties, dec: 0 },
+                    { label: "100s", value: stats.batting_overview?.hundreds, dec: 0 },
+                    { label: "Boundaries", value: stats.batting_overview?.boundaries, dec: 0 },
+                    { label: "Sixes", value: stats.batting_overview?.sixes, dec: 0 },
+                  ].map(({ label, value, dec = 1 }) => (
+                    <div key={label} style={s.statBox}>
+                      <span style={s.statValue}>{safeNum(value, dec)}</span>
+                      <span style={s.statLabel}>{label}</span>
                     </div>
                   ))}
                 </div>
+              </div>
 
-                {/* Fault Analysis */}
-                <div style={s.faultCard}>
-                  <h3 style={s.cardTitle}>⚠️ Fault Analysis</h3>
-                  <div style={s.faultGrid}>
-                    <div style={s.faultItem}>
-                      <div style={s.faultValue}>{bat.ducks}</div>
-                      <div style={s.faultLabel}>Ducks</div>
-                      <div style={s.faultPct}>{bat.duck_pct}% of innings</div>
-                    </div>
-                    <div style={s.faultItem}>
-                      <div style={s.faultValue}>{bat.golden_ducks}</div>
-                      <div style={s.faultLabel}>Golden Ducks</div>
-                      <div style={s.faultPct}>Out first ball</div>
-                    </div>
-                    <div style={s.faultItem}>
-                      <div style={s.faultValue}>{bat.dot_pct}%</div>
-                      <div style={s.faultLabel}>Dot Ball %</div>
-                      <div style={s.faultPct}>Balls with no score</div>
-                    </div>
-                    <div style={s.faultItem}>
-                      <div style={{ ...s.faultValue, color: '#10b981' }}>{bat.boundary_pct}%</div>
-                      <div style={s.faultLabel}>Boundary %</div>
-                      <div style={s.faultPct}>Balls hit for 4 or 6</div>
-                    </div>
-                    <div style={s.faultItem}>
-                      <div style={{ ...s.faultValue, color: '#f59e0b' }}>
-                        {Object.entries(bat.dismissal_types || {}).sort((a,b)=>b[1]-a[1])[0]?.[0]?.replace(/_/g,' ') || '—'}
+              {/* Fault Analysis */}
+              {(stats.batting_overview?.ducks > 0 || stats.batting_overview?.golden_ducks > 0) && (
+                <div style={s.card}>
+                  <div style={s.cardTitle}>⚠️ Fault Analysis</div>
+                  <div style={s.faultPanel}>
+                    <div style={s.faultTitle}>🔴 Vulnerability Indicators</div>
+                    <div style={s.faultGrid}>
+                      <div style={s.faultItem}>
+                        <span style={s.faultValue}>{stats.batting_overview?.ducks ?? 0}</span>
+                        <span style={s.faultLabel}>Ducks</span>
                       </div>
-                      <div style={s.faultLabel}>Most Common Dismissal</div>
-                      <div style={s.faultPct}>How they get out most</div>
-                    </div>
-                    <div style={s.faultItem}>
-                      <div style={{ ...s.faultValue, color: '#ef4444' }}>
-                        {Object.entries(bat.phase_dismissals || {}).sort((a,b)=>b[1]-a[1])[0]?.[0] || '—'}
+                      <div style={s.faultItem}>
+                        <span style={s.faultValue}>{stats.batting_overview?.golden_ducks ?? 0}</span>
+                        <span style={s.faultLabel}>Golden Ducks</span>
                       </div>
-                      <div style={s.faultLabel}>Most Vulnerable Phase</div>
-                      <div style={s.faultPct}>Phase with most dismissals</div>
+                      <div style={s.faultItem}>
+                        <span style={s.faultValue}>
+                          {stats.batting_overview?.innings > 0
+                            ? safeNum((stats.batting_overview.ducks / stats.batting_overview.innings) * 100)
+                            : "0.0"}%
+                        </span>
+                        <span style={s.faultLabel}>Duck Rate</span>
+                      </div>
+                      {stats.most_common_dismissal && (
+                        <div style={s.faultItem}>
+                          <span style={{ ...s.faultValue, fontSize: "1rem" }}>
+                            {stats.most_common_dismissal}
+                          </span>
+                          <span style={s.faultLabel}>Most Common Dismissal</span>
+                        </div>
+                      )}
+                      {stats.most_vulnerable_phase && (
+                        <div style={s.faultItem}>
+                          <span style={{ ...s.faultValue, fontSize: "1rem" }}>
+                            {stats.most_vulnerable_phase}
+                          </span>
+                          <span style={s.faultLabel}>Most Vulnerable Phase</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
+              )}
 
-                {/* Charts Row */}
-                <div style={s.chartsRow}>
-                  {/* Dismissal breakdown */}
-                  <div style={s.chartCard}>
-                    <h3 style={s.cardTitle}>Dismissal Breakdown</h3>
-                    <p style={s.chartSub}>How the player gets dismissed</p>
-                    {dismissalData.length > 0 ? (
-                      <ResponsiveContainer width="100%" height={260}>
-                        <PieChart>
-                          <Pie data={dismissalData} cx="50%" cy="50%"
-                            innerRadius={60} outerRadius={100}
-                            paddingAngle={3} dataKey="value"
-                            label={({ name, percent }) => `${(percent*100).toFixed(0)}%`}
-                            labelLine={false}>
-                            {dismissalData.map((_, i) => (
-                              <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
-                            ))}
-                          </Pie>
-                          <Tooltip contentStyle={tooltipStyle} />
-                          <Legend formatter={v => <span style={{ color: '#94a3b8', fontSize: '0.78rem' }}>{v}</span>} />
-                        </PieChart>
-                      </ResponsiveContainer>
-                    ) : <NoData />}
+              {/* Batting Charts */}
+              <div style={s.chartsGrid}>
+                {/* Dismissal Pie */}
+                {dismissalData().length > 0 && (
+                  <div style={s.card}>
+                    <div style={s.cardTitle}>Dismissal Breakdown</div>
+                    <ResponsiveContainer width="100%" height={220}>
+                      <PieChart>
+                        <Pie
+                          data={dismissalData()}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={50}
+                          outerRadius={85}
+                          dataKey="value"
+                          paddingAngle={3}
+                        >
+                          {dismissalData().map((_, i) => (
+                            <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip
+                          contentStyle={{ background: "#1e293b", border: "1px solid #334155", borderRadius: "8px" }}
+                          labelStyle={{ color: "#f59e0b" }}
+                        />
+                        <Legend wrapperStyle={{ fontSize: "0.75rem", color: "#94a3b8" }} />
+                      </PieChart>
+                    </ResponsiveContainer>
                   </div>
+                )}
 
-                  {/* Score distribution */}
-                  <div style={s.chartCard}>
-                    <h3 style={s.cardTitle}>Score Distribution</h3>
-                    <p style={s.chartSub}>Runs scored per innings frequency</p>
-                    <ResponsiveContainer width="100%" height={260}>
-                      <BarChart data={scoreDistData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
-                        <XAxis dataKey="name" tick={{ fill: '#94a3b8', fontSize: 11 }} />
-                        <YAxis tick={{ fill: '#94a3b8', fontSize: 11 }} />
-                        <Tooltip contentStyle={tooltipStyle} />
-                        <Bar dataKey="value" name="Innings" radius={[4,4,0,0]}>
-                          {scoreDistData.map((entry, i) => (
-                            <Cell key={i} fill={entry.name === '0' ? '#ef4444' : '#f59e0b'} />
+                {/* Score Distribution */}
+                {scoreDistData().length > 0 && (
+                  <div style={s.card}>
+                    <div style={s.cardTitle}>Score Distribution</div>
+                    <ResponsiveContainer width="100%" height={220}>
+                      <BarChart data={scoreDistData()} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                        <XAxis dataKey="range" tick={{ fill: "#94a3b8", fontSize: 11 }} />
+                        <YAxis tick={{ fill: "#94a3b8", fontSize: 11 }} />
+                        <Tooltip
+                          contentStyle={{ background: "#1e293b", border: "1px solid #334155", borderRadius: "8px" }}
+                        />
+                        <Bar dataKey="count" fill="#1e40af" radius={[4, 4, 0, 0]}>
+                          {scoreDistData().map((entry, i) => (
+                            <Cell
+                              key={i}
+                              fill={entry.range === "0" ? "#ef4444" : "#1e40af"}
+                            />
                           ))}
                         </Bar>
                       </BarChart>
                     </ResponsiveContainer>
                   </div>
-                </div>
+                )}
+              </div>
 
-                {/* Phase Performance */}
-                <div style={s.chartCard}>
-                  <h3 style={s.cardTitle}>Phase Performance — Batting</h3>
-                  <p style={s.chartSub}>Strike rate and dismissals by match phase</p>
-                  <ResponsiveContainer width="100%" height={240}>
-                    <BarChart data={phaseData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
-                      <XAxis dataKey="phase" tick={{ fill: '#94a3b8', fontSize: 12 }} />
-                      <YAxis tick={{ fill: '#94a3b8', fontSize: 11 }} />
-                      <Tooltip contentStyle={tooltipStyle} />
-                      <Legend formatter={v => <span style={{ color: '#94a3b8', fontSize: '0.78rem' }}>{v}</span>} />
-                      <Bar dataKey="Strike Rate" fill="#f59e0b" radius={[4,4,0,0]} />
-                      <Bar dataKey="Dismissals" fill="#ef4444" radius={[4,4,0,0]} />
+              {/* Phase Performance */}
+              {phaseData().length > 0 && (
+                <div style={s.card}>
+                  <div style={s.cardTitle}>Phase Batting Performance</div>
+                  <ResponsiveContainer width="100%" height={220}>
+                    <BarChart data={phaseData()} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                      <XAxis dataKey="phase" tick={{ fill: "#94a3b8", fontSize: 12 }} />
+                      <YAxis tick={{ fill: "#94a3b8", fontSize: 12 }} />
+                      <Tooltip
+                        contentStyle={{ background: "#1e293b", border: "1px solid #334155", borderRadius: "8px" }}
+                      />
+                      <Legend wrapperStyle={{ color: "#94a3b8", fontSize: "0.8rem" }} />
+                      <Bar dataKey="Strike Rate" fill="#f59e0b" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="Dismissals" fill="#ef4444" radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
-              </>
-            )}
+              )}
+            </>
+          )}
 
-            {/* ─── BOWLING SECTION ─── */}
-            {(activeTab === 'bowling' || !hasBatting) && hasbowling && (
-              <>
-                {/* Bowling Overview */}
+          {/* BOWLING SECTION */}
+          {hasBowling && (activeTab === "bowling" || !isAllRounder) && (
+            <>
+              {/* Bowling Overview */}
+              <div style={s.card}>
+                <div style={s.cardTitle}>Bowling Overview</div>
                 <div style={s.statsGrid}>
                   {[
-                    { label: 'Wickets', value: bowl.wickets, color: '#f59e0b' },
-                    { label: 'Economy', value: bowl.economy, color: bowl.economy < 8 ? '#10b981' : '#ef4444' },
-                    { label: 'Average', value: bowl.average || '—' },
-                    { label: 'Bowling SR', value: bowl.strike_rate || '—' },
-                    { label: 'Dot Ball %', value: `${bowl.dot_pct}%`, color: '#3b82f6' },
-                    { label: 'Innings Bowled', value: bowl.innings },
-                  ].map(c => (
-                    <div key={c.label} style={s.statCard}>
-                      <div style={{ ...s.statValue, color: c.color || 'var(--text-primary)' }}>{c.value}</div>
-                      <div style={s.statLabel}>{c.label}</div>
+                    { label: "Matches", value: stats.bowling_overview?.matches, dec: 0 },
+                    { label: "Wickets", value: stats.bowling_overview?.wickets, dec: 0 },
+                    { label: "Economy", value: stats.bowling_overview?.economy },
+                    { label: "Average", value: stats.bowling_overview?.average },
+                    { label: "Bowling SR", value: stats.bowling_overview?.bowling_sr },
+                    { label: "Best Figures", value: stats.bowling_overview?.best_figures ?? "—", raw: true },
+                    { label: "Dot Ball %", value: stats.bowling_overview?.dot_pct },
+                    { label: "5-Wicket Hauls", value: stats.bowling_overview?.five_wickets ?? 0, dec: 0 },
+                  ].map(({ label, value, dec = 1, raw }) => (
+                    <div key={label} style={s.statBox}>
+                      <span style={s.statValue}>
+                        {raw ? value : safeNum(value, dec)}
+                      </span>
+                      <span style={s.statLabel}>{label}</span>
                     </div>
                   ))}
                 </div>
+              </div>
 
-                <div style={s.chartsRow}>
-                  {/* Wicket types */}
-                  <div style={s.chartCard}>
-                    <h3 style={s.cardTitle}>Wicket Types</h3>
-                    <p style={s.chartSub}>How the player takes wickets</p>
-                    {wicketTypesData.length > 0 ? (
-                      <ResponsiveContainer width="100%" height={260}>
-                        <PieChart>
-                          <Pie data={wicketTypesData} cx="50%" cy="50%"
-                            innerRadius={60} outerRadius={100}
-                            paddingAngle={3} dataKey="value"
-                            label={({ name, percent }) => `${(percent*100).toFixed(0)}%`}
-                            labelLine={false}>
-                            {wicketTypesData.map((_, i) => (
-                              <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
-                            ))}
-                          </Pie>
-                          <Tooltip contentStyle={tooltipStyle} />
-                          <Legend formatter={v => <span style={{ color: '#94a3b8', fontSize: '0.78rem' }}>{v}</span>} />
-                        </PieChart>
-                      </ResponsiveContainer>
-                    ) : <NoData />}
+              {/* Bowling Charts */}
+              <div style={s.chartsGrid}>
+                {wicketTypeData().length > 0 && (
+                  <div style={s.card}>
+                    <div style={s.cardTitle}>Wicket Types</div>
+                    <ResponsiveContainer width="100%" height={220}>
+                      <PieChart>
+                        <Pie
+                          data={wicketTypeData()}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={50}
+                          outerRadius={85}
+                          dataKey="value"
+                          paddingAngle={3}
+                        >
+                          {wicketTypeData().map((_, i) => (
+                            <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip
+                          contentStyle={{ background: "#1e293b", border: "1px solid #334155", borderRadius: "8px" }}
+                        />
+                        <Legend wrapperStyle={{ fontSize: "0.75rem", color: "#94a3b8" }} />
+                      </PieChart>
+                    </ResponsiveContainer>
                   </div>
+                )}
 
-                  {/* Phase economy */}
-                  <div style={s.chartCard}>
-                    <h3 style={s.cardTitle}>Phase Economy Rate</h3>
-                    <p style={s.chartSub}>Economy by phase (lower is better)</p>
-                    {bowlPhaseData.length > 0 ? (
-                      <ResponsiveContainer width="100%" height={260}>
-                        <BarChart data={bowlPhaseData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
-                          <XAxis dataKey="phase" tick={{ fill: '#94a3b8', fontSize: 12 }} />
-                          <YAxis tick={{ fill: '#94a3b8', fontSize: 11 }} />
-                          <Tooltip contentStyle={tooltipStyle} />
-                          <Bar dataKey="Economy" fill="#3b82f6" radius={[4,4,0,0]} />
-                        </BarChart>
-                      </ResponsiveContainer>
-                    ) : <NoData />}
+                {phaseBowlingData().length > 0 && (
+                  <div style={s.card}>
+                    <div style={s.cardTitle}>Phase Bowling Economy</div>
+                    <ResponsiveContainer width="100%" height={220}>
+                      <BarChart data={phaseBowlingData()} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                        <XAxis dataKey="phase" tick={{ fill: "#94a3b8", fontSize: 12 }} />
+                        <YAxis tick={{ fill: "#94a3b8", fontSize: 12 }} />
+                        <Tooltip
+                          contentStyle={{ background: "#1e293b", border: "1px solid #334155", borderRadius: "8px" }}
+                        />
+                        <Legend wrapperStyle={{ color: "#94a3b8", fontSize: "0.8rem" }} />
+                        <Bar dataKey="Economy" fill="#1e40af" radius={[4, 4, 0, 0]} />
+                        <Bar dataKey="Wickets" fill="#10b981" radius={[4, 4, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
                   </div>
-                </div>
-              </>
-            )}
+                )}
+              </div>
+            </>
+          )}
 
-            {/* Footer */}
-            <div style={s.reportFooter}>
-              <p style={{ fontWeight: 600, marginBottom: '0.25rem' }}>
-                {stats.player_name} · T20I Career Statistics
-              </p>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>
-                {years > 0 ? `Last ${years} years of data` : 'All-time career data'} · Based on Cricsheet T20I dataset ·
-                © {new Date().getFullYear()} CrickSL. All rights reserved.
-              </p>
+          {/* Recent Form Table */}
+          {Array.isArray(stats.recent_form) && stats.recent_form.length > 0 && (
+            <div style={s.card}>
+              <div style={s.cardTitle}>Recent Form — Last {stats.recent_form.length} Appearances</div>
+              <div style={{ overflowX: "auto" }}>
+                <table style={s.table}>
+                  <thead>
+                    <tr>
+                      <th style={s.th}>Date</th>
+                      <th style={s.th}>Opponent</th>
+                      {hasBatting && <><th style={s.th}>Runs</th><th style={s.th}>Dismissed By</th></>}
+                      {hasBowling && <><th style={s.th}>Wickets</th><th style={s.th}>Economy</th></>}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {stats.recent_form.map((row, i) => (
+                      <tr key={i} style={{ background: i % 2 === 0 ? "transparent" : "rgba(255,255,255,0.02)" }}>
+                        <td style={s.td}>{row.date ?? "—"}</td>
+                        <td style={s.td}>{row.opponent ?? "—"}</td>
+                        {hasBatting && (
+                          <>
+                            <td style={{
+                              ...s.td,
+                              color: Number(row.runs) === 0 ? "#ef4444" : Number(row.runs) >= 50 ? "#f59e0b" : "#cbd5e1",
+                              fontWeight: Number(row.runs) >= 50 ? 700 : 400,
+                            }}>
+                              {row.runs ?? "—"}
+                            </td>
+                            <td style={s.td}>{row.dismissal ?? row.dismissed_by ?? "—"}</td>
+                          </>
+                        )}
+                        {hasBowling && (
+                          <>
+                            <td style={s.td}>{row.wickets ?? "—"}</td>
+                            <td style={s.td}>{row.economy != null ? safeNum(row.economy) : "—"}</td>
+                          </>
+                        )}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </>
-        )}
+          )}
 
-        {!stats && !loading && selected && (
-          <div style={s.loadingCard}>
-            <p style={{ color: 'var(--text-muted)' }}>No data found for this player in the selected period.</p>
-          </div>
-        )}
-      </div>
+          {/* No data fallback */}
+          {!hasBatting && !hasBowling && (
+            <div style={s.emptyState}>
+              No performance data found for {selectedPlayer} in the selected era.<br />
+              Try selecting "All Time" to see historical data.
+            </div>
+          )}
+        </>
+      )}
     </div>
-  )
-}
-
-function NoData() {
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 200, color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-      No data available
-    </div>
-  )
-}
-
-const s = {
-  page:       { background: 'var(--bg-primary)', minHeight: '100vh', padding: '2rem 1.5rem' },
-  container:  { maxWidth: '1280px', margin: '0 auto' },
-  header:     { marginBottom: '1.75rem' },
-  title:      { fontFamily: "'Rajdhani', sans-serif", fontSize: '1.9rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.25rem' },
-  subtitle:   { color: 'var(--text-secondary)', fontSize: '0.9rem' },
-
-  filtersCard:    { background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '1.75rem', marginBottom: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' },
-  filterSection:  { display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' },
-  filterLabel:    { fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', minWidth: '100px' },
-  btnGroup:       { display: 'flex', gap: '0.5rem', flexWrap: 'wrap' },
-  filterBtn:      { padding: '0.4rem 0.9rem', borderRadius: '8px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.83rem', fontWeight: 500, transition: 'all 0.15s' },
-  filterBtnActive:{ background: 'rgba(245,158,11,0.1)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.4)' },
-  select:         { padding: '0.6rem 1rem', background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '0.9rem', minWidth: '300px', outline: 'none' },
-  playerCount:    { fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.35rem' },
-
-  loadingCard:  { background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '3rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' },
-  spinner:      { width: '38px', height: '38px', border: '3px solid rgba(245,158,11,0.2)', borderTop: '3px solid #f59e0b', borderRadius: '50%', animation: 'spin 0.8s linear infinite' },
-
-  identityCard: { background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '1.5rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '1.25rem' },
-  avatarLarge:  { width: '56px', height: '56px', borderRadius: '50%', background: 'rgba(245,158,11,0.15)', border: '2px solid rgba(245,158,11,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, color: '#fbbf24', fontSize: '1.5rem', flexShrink: 0 },
-  playerName:   { fontFamily: "'Rajdhani', sans-serif", fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.4rem' },
-  playerMeta:   { display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' },
-  badgeActive:  { fontSize: '0.72rem', fontWeight: 600, padding: '0.2rem 0.6rem', borderRadius: '4px', background: 'rgba(16,185,129,0.15)', color: '#34d399', border: '1px solid rgba(16,185,129,0.3)' },
-  badgeLegend:  { fontSize: '0.72rem', fontWeight: 600, padding: '0.2rem 0.6rem', borderRadius: '4px', background: 'rgba(245,158,11,0.15)', color: '#fbbf24', border: '1px solid rgba(245,158,11,0.3)' },
-  metaItem:     { fontSize: '0.8rem', color: 'var(--text-secondary)', padding: '0.15rem 0.5rem', borderRadius: '4px', background: 'rgba(255,255,255,0.05)' },
-
-  tabs:         { display: 'flex', gap: '4px', background: 'rgba(255,255,255,0.04)', borderRadius: '10px', padding: '4px', marginBottom: '1.5rem', maxWidth: '400px' },
-  tab:          { flex: 1, padding: '0.6rem', borderRadius: '7px', border: 'none', cursor: 'pointer', fontSize: '0.88rem', fontWeight: 500, background: 'transparent', color: 'var(--text-secondary)', transition: 'all 0.18s' },
-  tabActive:    { background: 'var(--bg-secondary)', color: '#f59e0b', boxShadow: '0 1px 4px rgba(0,0,0,0.3)' },
-
-  statsGrid:    { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1rem', marginBottom: '1.5rem' },
-  statCard:     { background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '1.1rem', textAlign: 'center' },
-  statValue:    { fontSize: '1.6rem', fontWeight: 700, fontFamily: "'Rajdhani', sans-serif", marginBottom: '0.25rem' },
-  statLabel:    { fontSize: '0.72rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' },
-
-  faultCard:    { background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '12px', padding: '1.5rem', marginBottom: '1.5rem' },
-  faultGrid:    { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1rem', marginTop: '1rem' },
-  faultItem:    { textAlign: 'center' },
-  faultValue:   { fontSize: '1.4rem', fontWeight: 700, color: '#ef4444', fontFamily: "'Rajdhani', sans-serif", marginBottom: '0.2rem' },
-  faultLabel:   { fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: 500, marginBottom: '0.15rem' },
-  faultPct:     { fontSize: '0.7rem', color: 'var(--text-muted)' },
-
-  chartsRow:    { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '1.5rem', marginBottom: '1.5rem' },
-  chartCard:    { background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '1.5rem' },
-  cardTitle:    { fontFamily: "'Rajdhani', sans-serif", fontSize: '1.05rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.25rem' },
-  chartSub:     { color: 'var(--text-secondary)', fontSize: '0.78rem', marginBottom: '1.25rem' },
-
-  reportFooter: { background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '1.25rem 1.5rem', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '0.85rem' },
+  );
 }
