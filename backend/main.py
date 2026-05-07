@@ -29,7 +29,7 @@ app.add_middleware(
 
 # ─── Routers ──────────────────────────────────────────────────────
 app.include_router(auth_router)                              # /auth/*
-app.include_router(player_dashboard_router)                  # /players/dashboard/*
+app.include_router(player_dashboard_router, prefix="/players", tags=["player-dashboard"])                  # /players/dashboard/*
 app.include_router(venues.router,           prefix="/venues")     # /venues/*
 app.include_router(players.router,          prefix="/players")    # /players/*
 app.include_router(matches.router,          prefix="/matches")    # /matches/*
