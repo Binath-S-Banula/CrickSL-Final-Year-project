@@ -181,7 +181,7 @@ def forgot_password(request: ForgotPasswordRequest, db: Session = Depends(get_db
 
     # Hash and save
     from services.auth_service import hash_password
-    user.password_hash = hash_password(temp_password)
+    user.hashed_password = hash_password(temp_password)
     user.must_change_password = True   # flag to prompt change on next login
     db.commit()
 
