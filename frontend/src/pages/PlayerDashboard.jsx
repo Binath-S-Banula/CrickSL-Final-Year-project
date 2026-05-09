@@ -1,11 +1,27 @@
 import { useState, useEffect } from "react";
 import {
-  PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer,
-  BarChart, Bar, XAxis, YAxis, CartesianGrid
+  PieChart,
+  Pie,
+  Cell,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
 } from "recharts";
 import api from "../api/api";
 
-const COLORS = ["#f59e0b", "#1e40af", "#10b981", "#ef4444", "#8b5cf6", "#06b6d4"];
+const COLORS = [
+  "#f59e0b",
+  "#1e40af",
+  "#10b981",
+  "#ef4444",
+  "#8b5cf6",
+  "#06b6d4",
+];
 
 const ROLE_OPTIONS = [
   { value: "all", label: "All Players" },
@@ -160,7 +176,8 @@ const s = {
     fontSize: "0.7rem",
     fontWeight: 700,
     textTransform: "uppercase",
-    background: color === "active" ? "rgba(16,185,129,0.15)" : "rgba(245,158,11,0.15)",
+    background:
+      color === "active" ? "rgba(16,185,129,0.15)" : "rgba(245,158,11,0.15)",
     color: color === "active" ? "#10b981" : "#f59e0b",
     border: `1px solid ${color === "active" ? "#10b981" : "#f59e0b"}`,
     marginLeft: "0.5rem",
@@ -312,7 +329,9 @@ export default function PlayerDashboard() {
     setSelectedPlayer(null);
     setStats(null);
     try {
-      const res = await api.get(`/players/dashboard/list?role=${encodeURIComponent(role)}&years=${years}`);
+      const res = await api.get(
+        `/players/dashboard/list?role=${encodeURIComponent(role)}&years=${years}`,
+      );
       const data = res.data;
       if (Array.isArray(data)) {
         setPlayerList(data);
@@ -322,7 +341,9 @@ export default function PlayerDashboard() {
         setPlayerList([]);
       }
     } catch (err) {
-      setListError("Could not load player list. Make sure the backend is running.");
+      setListError(
+        "Could not load player list. Make sure the backend is running.",
+      );
     } finally {
       setLoadingList(false);
     }
@@ -335,7 +356,9 @@ export default function PlayerDashboard() {
     setLoadingStats(true);
     setActiveTab("batting");
     try {
-      const res = await api.get(`/players/dashboard/stats?name=${encodeURIComponent(playerName)}&years=${years}`);
+      const res = await api.get(
+        `/players/dashboard/stats?name=${encodeURIComponent(playerName)}&years=${years}`,
+      );
       setStats(res.data || {});
     } catch (err) {
       setStatsError(`Could not load stats for ${playerName}.`);
@@ -353,7 +376,9 @@ export default function PlayerDashboard() {
   const initials = (name) => {
     if (!name) return "?";
     const parts = name.split(" ");
-    return parts.length > 1 ? parts[0][0] + parts[parts.length - 1][0] : name[0];
+    return parts.length > 1
+      ? parts[0][0] + parts[parts.length - 1][0]
+      : name[0];
   };
 
   // Dismissal chart data
@@ -361,7 +386,10 @@ export default function PlayerDashboard() {
     if (!stats?.dismissals) return [];
     return Object.entries(stats.dismissals)
       .filter(([, v]) => v > 0)
-      .map(([k, v]) => ({ name: k.charAt(0).toUpperCase() + k.slice(1), value: v }));
+      .map(([k, v]) => ({
+        name: k.charAt(0).toUpperCase() + k.slice(1),
+        value: v,
+      }));
   };
 
   // Score distribution chart data
@@ -379,7 +407,7 @@ export default function PlayerDashboard() {
     return Object.entries(stats.phase_batting).map(([phase, d]) => ({
       phase: phase.charAt(0).toUpperCase() + phase.slice(1),
       "Strike Rate": Number(d?.strike_rate) || 0,
-      "Dismissals": Number(d?.dismissals) || 0,
+      Dismissals: Number(d?.dismissals) || 0,
     }));
   };
 
@@ -388,8 +416,8 @@ export default function PlayerDashboard() {
     if (!stats?.phase_bowling) return [];
     return Object.entries(stats.phase_bowling).map(([phase, d]) => ({
       phase: phase.charAt(0).toUpperCase() + phase.slice(1),
-      "Economy": Number(d?.economy) || 0,
-      "Wickets": Number(d?.wickets) || 0,
+      Economy: Number(d?.economy) || 0,
+      Wickets: Number(d?.wickets) || 0,
     }));
   };
 
@@ -397,11 +425,16 @@ export default function PlayerDashboard() {
     if (!stats?.wicket_types) return [];
     return Object.entries(stats.wicket_types)
       .filter(([, v]) => v > 0)
-      .map(([k, v]) => ({ name: k.charAt(0).toUpperCase() + k.slice(1), value: v }));
+      .map(([k, v]) => ({
+        name: k.charAt(0).toUpperCase() + k.slice(1),
+        value: v,
+      }));
   };
 
-  const hasBatting = stats?.batting_overview && Number(stats.batting_overview.innings || 0) > 0;
-  const hasBowling = stats?.bowling_overview && Number(stats.bowling_overview.wickets || 0) > 0;
+  const hasBatting =
+    stats?.batting_overview && Number(stats.batting_overview.innings || 0) > 0;
+  const hasBowling =
+    stats?.bowling_overview && Number(stats.bowling_overview.wickets || 0) > 0;
   const isAllRounder = hasBatting && hasBowling;
   const playerStatus = stats?.is_active ? "active" : "legend";
 
@@ -411,7 +444,8 @@ export default function PlayerDashboard() {
       <div style={s.header}>
         <div style={s.title}>🏏 Player Analytics Dashboard</div>
         <div style={s.subtitle}>
-          Role-based, era-filtered performance analysis for all Sri Lanka T20I players
+          Role-based, era-filtered performance analysis for all Sri Lanka T20I
+          players
         </div>
       </div>
 
@@ -419,17 +453,29 @@ export default function PlayerDashboard() {
       <div style={s.filterCard}>
         <div>
           <label style={s.label}>Role Filter</label>
-          <select style={s.select} value={role} onChange={(e) => setRole(e.target.value)}>
+          <select
+            style={s.select}
+            value={role}
+            onChange={(e) => setRole(e.target.value)}
+          >
             {ROLE_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>{o.label}</option>
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
             ))}
           </select>
         </div>
         <div>
           <label style={s.label}>Era Filter</label>
-          <select style={s.select} value={years} onChange={(e) => setYears(Number(e.target.value))}>
+          <select
+            style={s.select}
+            value={years}
+            onChange={(e) => setYears(Number(e.target.value))}
+          >
             {ERA_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>{o.label}</option>
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
             ))}
           </select>
         </div>
@@ -437,7 +483,13 @@ export default function PlayerDashboard() {
           <label style={s.label}>
             Players Found: {loadingList ? "..." : playerList.length}
           </label>
-          <div style={{ color: "#64748b", fontSize: "0.8rem", paddingTop: "0.4rem" }}>
+          <div
+            style={{
+              color: "#64748b",
+              fontSize: "0.8rem",
+              paddingTop: "0.4rem",
+            }}
+          >
             {years === 0
               ? "Showing all historical players (Legends included)"
               : `Active within last ${years} year${years > 1 ? "s" : ""}`}
@@ -455,13 +507,18 @@ export default function PlayerDashboard() {
           <div style={s.loading}>Loading players...</div>
         ) : playerList.length === 0 ? (
           <div style={s.emptyState}>
-            No players found for the selected filters. Try "All Time" era or change the role.
+            No players found for the selected filters. Try "All Time" era or
+            change the role.
           </div>
         ) : (
           <div style={s.playerListGrid}>
             {playerList.map((p) => {
-              const name = typeof p === "string" ? p : (p.name || p.player_name || String(p));
-              const pRole = typeof p === "object" ? (p.role || p.player_role || "") : "";
+              const name =
+                typeof p === "string"
+                  ? p
+                  : p.name || p.player_name || String(p);
+              const pRole =
+                typeof p === "object" ? p.role || p.player_role || "" : "";
               const isAct = typeof p === "object" ? !!p.is_active : true;
               return (
                 <div
@@ -473,11 +530,13 @@ export default function PlayerDashboard() {
                   <div style={s.playerCardMeta}>
                     {pRole && <span>{pRole}</span>}
                     {typeof p === "object" && (
-                      <span style={{
-                        marginLeft: pRole ? "0.5rem" : 0,
-                        color: isAct ? "#10b981" : "#f59e0b",
-                        fontWeight: 600,
-                      }}>
+                      <span
+                        style={{
+                          marginLeft: pRole ? "0.5rem" : 0,
+                          color: isAct ? "#10b981" : "#f59e0b",
+                          fontWeight: 600,
+                        }}
+                      >
                         {isAct ? "⚡ Active" : "🏛 Legend"}
                       </span>
                     )}
@@ -490,7 +549,9 @@ export default function PlayerDashboard() {
       </div>
 
       {/* Stats Panel */}
-      {loadingStats && <div style={s.loading}>⏳ Loading stats for {selectedPlayer}...</div>}
+      {loadingStats && (
+        <div style={s.loading}>⏳ Loading stats for {selectedPlayer}...</div>
+      )}
       {statsError && <div style={s.errorBox}>⚠️ {statsError}</div>}
 
       {stats && !loadingStats && (
@@ -499,7 +560,14 @@ export default function PlayerDashboard() {
           <div style={s.playerIdentity}>
             <div style={s.playerAvatar}>{initials(selectedPlayer)}</div>
             <div>
-              <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: "0.5rem" }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  flexWrap: "wrap",
+                  gap: "0.5rem",
+                }}
+              >
                 <h2 style={s.playerName}>{selectedPlayer}</h2>
                 <span style={s.badge(playerStatus)}>
                   {playerStatus === "active" ? "⚡ Active" : "🏛 Legend"}
@@ -507,8 +575,12 @@ export default function PlayerDashboard() {
               </div>
               <div style={s.playerMeta}>
                 {stats.role && <span>🎯 {stats.role}</span>}
-                {stats.batting_style && <span> · 🏏 {stats.batting_style}</span>}
-                {stats.bowling_style && <span> · ⚡ {stats.bowling_style}</span>}
+                {stats.batting_style && (
+                  <span> · 🏏 {stats.batting_style}</span>
+                )}
+                {stats.bowling_style && (
+                  <span> · ⚡ {stats.bowling_style}</span>
+                )}
                 <span> · 🇱🇰 Sri Lanka</span>
               </div>
               {stats.last_match_date && (
@@ -522,10 +594,16 @@ export default function PlayerDashboard() {
           {/* Tab selector for All-Rounders */}
           {isAllRounder && (
             <div style={s.tabRow}>
-              <button style={s.tab(activeTab === "batting")} onClick={() => setActiveTab("batting")}>
+              <button
+                style={s.tab(activeTab === "batting")}
+                onClick={() => setActiveTab("batting")}
+              >
                 🏏 Batting
               </button>
-              <button style={s.tab(activeTab === "bowling")} onClick={() => setActiveTab("bowling")}>
+              <button
+                style={s.tab(activeTab === "bowling")}
+                onClick={() => setActiveTab("bowling")}
+              >
                 ⚡ Bowling
               </button>
             </div>
@@ -539,16 +617,54 @@ export default function PlayerDashboard() {
                 <div style={s.cardTitle}>Batting Overview</div>
                 <div style={s.statsGrid}>
                   {[
-                    { label: "Matches", value: stats.batting_overview?.matches, dec: 0 },
-                    { label: "Innings", value: stats.batting_overview?.innings, dec: 0 },
-                    { label: "Total Runs", value: stats.batting_overview?.total_runs, dec: 0 },
-                    { label: "Average", value: stats.batting_overview?.average },
-                    { label: "Strike Rate", value: stats.batting_overview?.strike_rate },
-                    { label: "Highest Score", value: stats.batting_overview?.highest_score, dec: 0 },
-                    { label: "50s", value: stats.batting_overview?.fifties, dec: 0 },
-                    { label: "100s", value: stats.batting_overview?.hundreds, dec: 0 },
-                    { label: "Boundaries", value: stats.batting_overview?.boundaries, dec: 0 },
-                    { label: "Sixes", value: stats.batting_overview?.sixes, dec: 0 },
+                    {
+                      label: "Matches",
+                      value: stats.batting_overview?.matches,
+                      dec: 0,
+                    },
+                    {
+                      label: "Innings",
+                      value: stats.batting_overview?.innings,
+                      dec: 0,
+                    },
+                    {
+                      label: "Total Runs",
+                      value: stats.batting_overview?.total_runs,
+                      dec: 0,
+                    },
+                    {
+                      label: "Average",
+                      value: stats.batting_overview?.average,
+                    },
+                    {
+                      label: "Strike Rate",
+                      value: stats.batting_overview?.strike_rate,
+                    },
+                    {
+                      label: "Highest Score",
+                      value: stats.batting_overview?.highest_score,
+                      dec: 0,
+                    },
+                    {
+                      label: "50s",
+                      value: stats.batting_overview?.fifties,
+                      dec: 0,
+                    },
+                    {
+                      label: "100s",
+                      value: stats.batting_overview?.hundreds,
+                      dec: 0,
+                    },
+                    {
+                      label: "Boundaries",
+                      value: stats.batting_overview?.boundaries,
+                      dec: 0,
+                    },
+                    {
+                      label: "Sixes",
+                      value: stats.batting_overview?.sixes,
+                      dec: 0,
+                    },
                   ].map(({ label, value, dec = 1 }) => (
                     <div key={label} style={s.statBox}>
                       <span style={s.statValue}>{safeNum(value, dec)}</span>
@@ -559,25 +675,35 @@ export default function PlayerDashboard() {
               </div>
 
               {/* Fault Analysis */}
-              {(stats.batting_overview?.ducks > 0 || stats.batting_overview?.golden_ducks > 0) && (
+              {(stats.batting_overview?.ducks > 0 ||
+                stats.batting_overview?.golden_ducks > 0) && (
                 <div style={s.card}>
                   <div style={s.cardTitle}>⚠️ Fault Analysis</div>
                   <div style={s.faultPanel}>
                     <div style={s.faultTitle}>🔴 Vulnerability Indicators</div>
                     <div style={s.faultGrid}>
                       <div style={s.faultItem}>
-                        <span style={s.faultValue}>{stats.batting_overview?.ducks ?? 0}</span>
+                        <span style={s.faultValue}>
+                          {stats.batting_overview?.ducks ?? 0}
+                        </span>
                         <span style={s.faultLabel}>Ducks</span>
                       </div>
                       <div style={s.faultItem}>
-                        <span style={s.faultValue}>{stats.batting_overview?.golden_ducks ?? 0}</span>
+                        <span style={s.faultValue}>
+                          {stats.batting_overview?.golden_ducks ?? 0}
+                        </span>
                         <span style={s.faultLabel}>Golden Ducks</span>
                       </div>
                       <div style={s.faultItem}>
                         <span style={s.faultValue}>
                           {stats.batting_overview?.innings > 0
-                            ? safeNum((stats.batting_overview.ducks / stats.batting_overview.innings) * 100)
-                            : "0.0"}%
+                            ? safeNum(
+                                (stats.batting_overview.ducks /
+                                  stats.batting_overview.innings) *
+                                  100,
+                              )
+                            : "0.0"}
+                          %
                         </span>
                         <span style={s.faultLabel}>Duck Rate</span>
                       </div>
@@ -586,7 +712,9 @@ export default function PlayerDashboard() {
                           <span style={{ ...s.faultValue, fontSize: "1rem" }}>
                             {stats.most_common_dismissal}
                           </span>
-                          <span style={s.faultLabel}>Most Common Dismissal</span>
+                          <span style={s.faultLabel}>
+                            Most Common Dismissal
+                          </span>
                         </div>
                       )}
                       {stats.most_vulnerable_phase && (
@@ -594,7 +722,9 @@ export default function PlayerDashboard() {
                           <span style={{ ...s.faultValue, fontSize: "1rem" }}>
                             {stats.most_vulnerable_phase}
                           </span>
-                          <span style={s.faultLabel}>Most Vulnerable Phase</span>
+                          <span style={s.faultLabel}>
+                            Most Vulnerable Phase
+                          </span>
                         </div>
                       )}
                     </div>
@@ -624,10 +754,19 @@ export default function PlayerDashboard() {
                           ))}
                         </Pie>
                         <Tooltip
-                          contentStyle={{ background: "#1e293b", border: "1px solid #334155", borderRadius: "8px" }}
+                          contentStyle={{
+                            background: "#1e293b",
+                            border: "1px solid #334155",
+                            borderRadius: "8px",
+                          }}
                           labelStyle={{ color: "#f59e0b" }}
                         />
-                        <Legend wrapperStyle={{ fontSize: "0.75rem", color: "#94a3b8" }} />
+                        <Legend
+                          wrapperStyle={{
+                            fontSize: "0.75rem",
+                            color: "#94a3b8",
+                          }}
+                        />
                       </PieChart>
                     </ResponsiveContainer>
                   </div>
@@ -638,14 +777,28 @@ export default function PlayerDashboard() {
                   <div style={s.card}>
                     <div style={s.cardTitle}>Score Distribution</div>
                     <ResponsiveContainer width="100%" height={220}>
-                      <BarChart data={scoreDistData()} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
+                      <BarChart
+                        data={scoreDistData()}
+                        margin={{ top: 5, right: 10, left: -20, bottom: 5 }}
+                      >
                         <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                        <XAxis dataKey="range" tick={{ fill: "#94a3b8", fontSize: 11 }} />
+                        <XAxis
+                          dataKey="range"
+                          tick={{ fill: "#94a3b8", fontSize: 11 }}
+                        />
                         <YAxis tick={{ fill: "#94a3b8", fontSize: 11 }} />
                         <Tooltip
-                          contentStyle={{ background: "#1e293b", border: "1px solid #334155", borderRadius: "8px" }}
+                          contentStyle={{
+                            background: "#1e293b",
+                            border: "1px solid #334155",
+                            borderRadius: "8px",
+                          }}
                         />
-                        <Bar dataKey="count" fill="#1e40af" radius={[4, 4, 0, 0]}>
+                        <Bar
+                          dataKey="count"
+                          fill="#1e40af"
+                          radius={[4, 4, 0, 0]}
+                        >
                           {scoreDistData().map((entry, i) => (
                             <Cell
                               key={i}
@@ -664,16 +817,36 @@ export default function PlayerDashboard() {
                 <div style={s.card}>
                   <div style={s.cardTitle}>Phase Batting Performance</div>
                   <ResponsiveContainer width="100%" height={220}>
-                    <BarChart data={phaseData()} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                    <BarChart
+                      data={phaseData()}
+                      margin={{ top: 5, right: 20, left: -10, bottom: 5 }}
+                    >
                       <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                      <XAxis dataKey="phase" tick={{ fill: "#94a3b8", fontSize: 12 }} />
+                      <XAxis
+                        dataKey="phase"
+                        tick={{ fill: "#94a3b8", fontSize: 12 }}
+                      />
                       <YAxis tick={{ fill: "#94a3b8", fontSize: 12 }} />
                       <Tooltip
-                        contentStyle={{ background: "#1e293b", border: "1px solid #334155", borderRadius: "8px" }}
+                        contentStyle={{
+                          background: "#1e293b",
+                          border: "1px solid #334155",
+                          borderRadius: "8px",
+                        }}
                       />
-                      <Legend wrapperStyle={{ color: "#94a3b8", fontSize: "0.8rem" }} />
-                      <Bar dataKey="Strike Rate" fill="#f59e0b" radius={[4, 4, 0, 0]} />
-                      <Bar dataKey="Dismissals" fill="#ef4444" radius={[4, 4, 0, 0]} />
+                      <Legend
+                        wrapperStyle={{ color: "#94a3b8", fontSize: "0.8rem" }}
+                      />
+                      <Bar
+                        dataKey="Strike Rate"
+                        fill="#f59e0b"
+                        radius={[4, 4, 0, 0]}
+                      />
+                      <Bar
+                        dataKey="Dismissals"
+                        fill="#ef4444"
+                        radius={[4, 4, 0, 0]}
+                      />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -689,14 +862,42 @@ export default function PlayerDashboard() {
                 <div style={s.cardTitle}>Bowling Overview</div>
                 <div style={s.statsGrid}>
                   {[
-                    { label: "Matches", value: stats.bowling_overview?.matches, dec: 0 },
-                    { label: "Wickets", value: stats.bowling_overview?.wickets, dec: 0 },
-                    { label: "Economy", value: stats.bowling_overview?.economy },
-                    { label: "Average", value: stats.bowling_overview?.average },
-                    { label: "Bowling SR", value: stats.bowling_overview?.bowling_sr },
-                    { label: "Best Figures", value: stats.bowling_overview?.best_figures ?? "—", raw: true },
-                    { label: "Dot Ball %", value: stats.bowling_overview?.dot_pct },
-                    { label: "5-Wicket Hauls", value: stats.bowling_overview?.five_wickets ?? 0, dec: 0 },
+                    {
+                      label: "Matches",
+                      value: stats.bowling_overview?.matches,
+                      dec: 0,
+                    },
+                    {
+                      label: "Wickets",
+                      value: stats.bowling_overview?.wickets,
+                      dec: 0,
+                    },
+                    {
+                      label: "Economy",
+                      value: stats.bowling_overview?.economy,
+                    },
+                    {
+                      label: "Average",
+                      value: stats.bowling_overview?.average,
+                    },
+                    {
+                      label: "Bowling SR",
+                      value: stats.bowling_overview?.bowling_sr,
+                    },
+                    {
+                      label: "Best Figures",
+                      value: stats.bowling_overview?.best_figures ?? "—",
+                      raw: true,
+                    },
+                    {
+                      label: "Dot Ball %",
+                      value: stats.bowling_overview?.dot_pct,
+                    },
+                    {
+                      label: "5-Wicket Hauls",
+                      value: stats.bowling_overview?.five_wickets ?? 0,
+                      dec: 0,
+                    },
                   ].map(({ label, value, dec = 1, raw }) => (
                     <div key={label} style={s.statBox}>
                       <span style={s.statValue}>
@@ -729,9 +930,18 @@ export default function PlayerDashboard() {
                           ))}
                         </Pie>
                         <Tooltip
-                          contentStyle={{ background: "#1e293b", border: "1px solid #334155", borderRadius: "8px" }}
+                          contentStyle={{
+                            background: "#1e293b",
+                            border: "1px solid #334155",
+                            borderRadius: "8px",
+                          }}
                         />
-                        <Legend wrapperStyle={{ fontSize: "0.75rem", color: "#94a3b8" }} />
+                        <Legend
+                          wrapperStyle={{
+                            fontSize: "0.75rem",
+                            color: "#94a3b8",
+                          }}
+                        />
                       </PieChart>
                     </ResponsiveContainer>
                   </div>
@@ -741,16 +951,39 @@ export default function PlayerDashboard() {
                   <div style={s.card}>
                     <div style={s.cardTitle}>Phase Bowling Economy</div>
                     <ResponsiveContainer width="100%" height={220}>
-                      <BarChart data={phaseBowlingData()} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                      <BarChart
+                        data={phaseBowlingData()}
+                        margin={{ top: 5, right: 20, left: -10, bottom: 5 }}
+                      >
                         <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                        <XAxis dataKey="phase" tick={{ fill: "#94a3b8", fontSize: 12 }} />
+                        <XAxis
+                          dataKey="phase"
+                          tick={{ fill: "#94a3b8", fontSize: 12 }}
+                        />
                         <YAxis tick={{ fill: "#94a3b8", fontSize: 12 }} />
                         <Tooltip
-                          contentStyle={{ background: "#1e293b", border: "1px solid #334155", borderRadius: "8px" }}
+                          contentStyle={{
+                            background: "#1e293b",
+                            border: "1px solid #334155",
+                            borderRadius: "8px",
+                          }}
                         />
-                        <Legend wrapperStyle={{ color: "#94a3b8", fontSize: "0.8rem" }} />
-                        <Bar dataKey="Economy" fill="#1e40af" radius={[4, 4, 0, 0]} />
-                        <Bar dataKey="Wickets" fill="#10b981" radius={[4, 4, 0, 0]} />
+                        <Legend
+                          wrapperStyle={{
+                            color: "#94a3b8",
+                            fontSize: "0.8rem",
+                          }}
+                        />
+                        <Bar
+                          dataKey="Economy"
+                          fill="#1e40af"
+                          radius={[4, 4, 0, 0]}
+                        />
+                        <Bar
+                          dataKey="Wickets"
+                          fill="#10b981"
+                          radius={[4, 4, 0, 0]}
+                        />
                       </BarChart>
                     </ResponsiveContainer>
                   </div>
@@ -762,38 +995,69 @@ export default function PlayerDashboard() {
           {/* Recent Form Table */}
           {Array.isArray(stats.recent_form) && stats.recent_form.length > 0 && (
             <div style={s.card}>
-              <div style={s.cardTitle}>Recent Form — Last {stats.recent_form.length} Appearances</div>
+              <div style={s.cardTitle}>
+                Recent Form — Last {stats.recent_form.length} Appearances
+              </div>
               <div style={{ overflowX: "auto" }}>
                 <table style={s.table}>
                   <thead>
                     <tr>
                       <th style={s.th}>Date</th>
                       <th style={s.th}>Opponent</th>
-                      {hasBatting && <><th style={s.th}>Runs</th><th style={s.th}>Dismissed By</th></>}
-                      {hasBowling && <><th style={s.th}>Wickets</th><th style={s.th}>Economy</th></>}
+                      {hasBatting && (
+                        <>
+                          <th style={s.th}>Runs</th>
+                          <th style={s.th}>Dismissed By</th>
+                        </>
+                      )}
+                      {hasBowling && (
+                        <>
+                          <th style={s.th}>Wickets</th>
+                          <th style={s.th}>Economy</th>
+                        </>
+                      )}
                     </tr>
                   </thead>
                   <tbody>
                     {stats.recent_form.map((row, i) => (
-                      <tr key={i} style={{ background: i % 2 === 0 ? "transparent" : "rgba(255,255,255,0.02)" }}>
+                      <tr
+                        key={i}
+                        style={{
+                          background:
+                            i % 2 === 0
+                              ? "transparent"
+                              : "rgba(255,255,255,0.02)",
+                        }}
+                      >
                         <td style={s.td}>{row.date ?? "—"}</td>
                         <td style={s.td}>{row.opponent ?? "—"}</td>
                         {hasBatting && (
                           <>
-                            <td style={{
-                              ...s.td,
-                              color: Number(row.runs) === 0 ? "#ef4444" : Number(row.runs) >= 50 ? "#f59e0b" : "#cbd5e1",
-                              fontWeight: Number(row.runs) >= 50 ? 700 : 400,
-                            }}>
+                            <td
+                              style={{
+                                ...s.td,
+                                color:
+                                  Number(row.runs) === 0
+                                    ? "#ef4444"
+                                    : Number(row.runs) >= 50
+                                      ? "#f59e0b"
+                                      : "#cbd5e1",
+                                fontWeight: Number(row.runs) >= 50 ? 700 : 400,
+                              }}
+                            >
                               {row.runs ?? "—"}
                             </td>
-                            <td style={s.td}>{row.dismissal ?? row.dismissed_by ?? "—"}</td>
+                            <td style={s.td}>
+                              {row.dismissal ?? row.dismissed_by ?? "—"}
+                            </td>
                           </>
                         )}
                         {hasBowling && (
                           <>
                             <td style={s.td}>{row.wickets ?? "—"}</td>
-                            <td style={s.td}>{row.economy != null ? safeNum(row.economy) : "—"}</td>
+                            <td style={s.td}>
+                              {row.economy != null ? safeNum(row.economy) : "—"}
+                            </td>
                           </>
                         )}
                       </tr>
@@ -807,7 +1071,9 @@ export default function PlayerDashboard() {
           {/* No data fallback */}
           {!hasBatting && !hasBowling && (
             <div style={s.emptyState}>
-              No performance data found for {selectedPlayer} in the selected era.<br />
+              No performance data found for {selectedPlayer} in the selected
+              era.
+              <br />
               Try selecting "All Time" to see historical data.
             </div>
           )}
