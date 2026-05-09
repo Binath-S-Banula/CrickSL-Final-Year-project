@@ -174,11 +174,10 @@ def forgot_password(request: ForgotPasswordRequest, db: Session = Depends(get_db
     # Generate a readable temporary password
     chars = string.ascii_letters + string.digits
     temp_password = (
-        random.choice(string.ascii_uppercase) +
-        random.choice(string.digits) +
-        ''.join(random.choices(chars, k=6)) +
-        random.choice('!@#$')
-    )
+    random.choice(string.ascii_uppercase) +
+    random.choice(string.digits) +
+    ''.join(random.choices(string.ascii_letters + string.digits, k=8))
+)
 
     # Hash and save
     from services.auth_service import hash_password
