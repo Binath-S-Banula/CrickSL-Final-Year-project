@@ -62,8 +62,7 @@ def get_player_list(
             })
         return players
 
-    except Exception as e:
-        # Fallback — just return all SL players with metadata
+    except Exception:
         try:
             rows = db.execute(text(
                 "SELECT name, player_role, batting_style, bowling_style FROM players "
@@ -89,7 +88,7 @@ def get_player_stats(
         df = date_clause(cutoff)
         NOT_OUT = "('run out','retired hurt','obstructing the field')"
 
-        # Metadata from players table directly
+        # Metadata
         meta = db.execute(text(
             "SELECT name, player_role, batting_style, bowling_style FROM players WHERE name = :name LIMIT 1"
         ), {"name": name}).fetchone()
@@ -115,11 +114,10 @@ def get_player_stats(
         ), {"name": name}).fetchone()
 
         batting_matches = int(br[0] or 0) if br else 0
-        balls_faced    = int(br[1] or 0) if br else 0
-        total_runs_raw = int(br[2] or 0) if br else 0
-        fours          = int(br[3] or 0) if br else 0
-        sixes          = int(br[4] or 0) if br else 0
-        golden_ducks   = int(br[5] or 0) if br else 0
+        balls_faced     = int(br[1] or 0) if br else 0
+        fours           = int(br[3] or 0) if br else 0
+        sixes           = int(br[4] or 0) if br else 0
+        golden_ducks    = int(br[5] or 0) if br else 0
 
         # Innings-level
         ir = db.execute(text(
@@ -137,13 +135,13 @@ def get_player_stats(
             "  GROUP BY d.match_id, i.id) sub"
         ), {"name": name}).fetchone()
 
-        total_runs      = int(ir[0] or 0) if ir else 0
-        innings_count   = int(ir[1] or 0) if ir else 0
-        ducks           = int(ir[2] or 0) if ir else 0
-        fifties         = int(ir[3] or 0) if ir else 0
-        hundreds        = int(ir[4] or 0) if ir else 0
-        highest_score   = int(ir[5] or 0) if ir else 0
-        dismissals_count= int(ir[6] or 0) if ir else 0
+        total_runs       = int(ir[0] or 0) if ir else 0
+        innings_count    = int(ir[1] or 0) if ir else 0
+        ducks            = int(ir[2] or 0) if ir else 0
+        fifties          = int(ir[3] or 0) if ir else 0
+        hundreds         = int(ir[4] or 0) if ir else 0
+        highest_score    = int(ir[5] or 0) if ir else 0
+        dismissals_count = int(ir[6] or 0) if ir else 0
 
         batting_avg = round(total_runs / dismissals_count, 2) if dismissals_count > 0 else float(total_runs)
         batting_sr  = round((total_runs / balls_faced) * 100, 2) if balls_faced > 0 else 0.0
@@ -207,7 +205,7 @@ def get_player_stats(
             dis   = int(row[3] or 0)
             phase_batting[phase] = {
                 "runs": runs, "balls": balls,
-                "strike_rate": round((runs/balls)*100, 2) if balls > 0 else 0.0,
+                "strike_rate": round((runs / balls) * 100, 2) if balls > 0 else 0.0,
                 "dismissals": dis
             }
             if dis > max_dis:
@@ -286,27 +284,57 @@ def get_player_stats(
                 wkts  = int(row[3] or 0)
                 phase_bowling[phase] = {
                     "runs": runs, "balls": balls, "wickets": wkts,
-                    "economy": round(runs / (balls/6), 2) if balls > 0 else 0.0
+                    "economy": round(runs / (balls / 6), 2) if balls > 0 else 0.0
                 }
 
-        # Recent form
+        # --- RECENT FORM (batting + bowling per match) ---
         recent_form = []
         try:
-            rf_rows = db.execute(text(
-                "SELECT m.date, CASE WHEN m.team1='Sri Lanka' THEN m.team2 ELSE m.team1 END, "
-                "SUM(d.runs_batter), "
-                "MAX(CASE WHEN d.is_wicket AND d.player_out=:name THEN d.wicket_kind ELSE NULL END) "
-                "FROM deliveries d JOIN innings i ON i.id=d.innings_id "
-                f"JOIN matches m ON m.id=d.match_id "
-                f"WHERE d.batter=:name AND (m.team1='Sri Lanka' OR m.team2='Sri Lanka') {df} "
-                "GROUP BY m.date, m.id, m.team1, m.team2 ORDER BY m.date DESC LIMIT 10"
+            # Get the last 10 matches this player appeared in
+            match_rows = db.execute(text(
+                "SELECT DISTINCT m.id, m.date, "
+                "CASE WHEN m.team1='Sri Lanka' THEN m.team2 ELSE m.team1 END AS opponent "
+                "FROM deliveries d JOIN matches m ON m.id=d.match_id "
+                f"WHERE (d.batter=:name OR d.bowler=:name) "
+                f"AND (m.team1='Sri Lanka' OR m.team2='Sri Lanka') {df} "
+                "ORDER BY m.date DESC LIMIT 10"
             ), {"name": name}).fetchall()
-            for row in rf_rows:
+
+            for match in match_rows:
+                mid     = match[0]
+                mdate   = match[1]
+                opponent = match[2]
+
+                # Batting figures for this match
+                bat = db.execute(text(
+                    "SELECT SUM(d.runs_batter), "
+                    "MAX(CASE WHEN d.is_wicket AND d.player_out=:name THEN d.wicket_kind ELSE NULL END) "
+                    "FROM deliveries d WHERE d.batter=:name AND d.match_id=:mid"
+                ), {"name": name, "mid": mid}).fetchone()
+
+                # Bowling figures for this match
+                bowl = db.execute(text(
+                    f"SELECT SUM(CASE WHEN d.is_wicket AND d.wicket_kind NOT IN {NOT_OUT} THEN 1 ELSE 0 END), "
+                    "SUM(d.runs_batter + d.runs_extras), "
+                    "COUNT(*) "
+                    "FROM deliveries d WHERE d.bowler=:name AND d.match_id=:mid"
+                ), {"name": name, "mid": mid}).fetchone()
+
+                bat_runs   = int(bat[0] or 0) if bat and bat[0] is not None else None
+                dismissal  = bat[1] if bat and bat[1] else ("Not Out" if bat_runs is not None else None)
+
+                bowl_balls = int(bowl[2] or 0) if bowl else 0
+                wkts       = int(bowl[0] or 0) if bowl and bowl_balls > 0 else None
+                runs_given = int(bowl[1] or 0) if bowl else 0
+                econ       = round(runs_given / (bowl_balls / 6), 2) if bowl_balls >= 6 else None
+
                 recent_form.append({
-                    "date": str(row[0]) if row[0] else "—",
-                    "opponent": row[1] or "—",
-                    "runs": int(row[2] or 0),
-                    "dismissal": row[3] or "Not Out",
+                    "date":      str(mdate) if mdate else "—",
+                    "opponent":  opponent or "—",
+                    "runs":      bat_runs,
+                    "dismissal": dismissal,
+                    "wickets":   wkts,
+                    "economy":   econ,
                 })
         except Exception:
             pass
