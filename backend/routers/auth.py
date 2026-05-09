@@ -2,6 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
+import random
+import string
 from database import SessionLocal
 from models.db_models import User
 from models.schemas import UserCreate, UserLogin, TokenResponse, UserResponse, RefreshRequest
@@ -152,3 +154,36 @@ def deactivate_user(
     user.is_active = False
     db.commit()
     return {"message": f"User {user.username} deactivated"}
+
+# Added forgot password endpoint
+class ForgotPasswordRequest(BaseModel):
+    username: str
+
+@router.post("/forgot-password")
+def forgot_password(request: ForgotPasswordRequest, db: Session = Depends(get_db)):
+    """
+    Generates a temporary password for the given username.
+    Returns the temp password directly (no email needed for local system).
+    """
+    from models.db_models import User
+
+    user = db.query(User).filter(User.username == request.username).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Username not found. Please check and try again.")
+
+    # Generate a readable temporary password
+    chars = string.ascii_letters + string.digits
+    temp_password = (
+        random.choice(string.ascii_uppercase) +
+        random.choice(string.digits) +
+        ''.join(random.choices(chars, k=6)) +
+        random.choice('!@#$')
+    )
+
+    # Hash and save
+    from services.auth_service import get_password_hash
+    user.password_hash = get_password_hash(temp_password)
+    user.must_change_password = True   # flag to prompt change on next login
+    db.commit()
+
+    return {"temp_password": temp_password, "username": request.username}

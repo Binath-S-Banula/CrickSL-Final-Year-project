@@ -1,215 +1,424 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
-import api from '../api/api'
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import api from '../api/api';
 
 export default function Login() {
-  const [tab, setTab]               = useState('signin')
-  const [username, setUsername]     = useState('')
-  const [email, setEmail]           = useState('')
-  const [password, setPassword]     = useState('')
-  const [confirmPwd, setConfirmPwd] = useState('')
-  const [role, setRole]             = useState('analyst')
-  const [error, setError]           = useState('')
-  const [success, setSuccess]       = useState('')
-  const [loading, setLoading]       = useState(false)
-  const { login } = useAuth()
-  const navigate  = useNavigate()
+  const navigate = useNavigate();
+  const { login } = useAuth();
 
-  const resetForm = () => {
-    setUsername(''); setEmail(''); setPassword('')
-    setConfirmPwd(''); setRole('analyst'); setError(''); setSuccess('')
-  }
+  // Sign In state
+  const [tab, setTab] = useState('signin');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  // Create Account state
+  const [regUsername, setRegUsername] = useState('');
+  const [regEmail, setRegEmail] = useState('');
+  const [regPassword, setRegPassword] = useState('');
+  const [regRole, setRegRole] = useState('analyst');
+  const [regError, setRegError] = useState('');
+  const [regSuccess, setRegSuccess] = useState('');
+  const [regLoading, setRegLoading] = useState(false);
+
+  // Forgot Password state
+  const [showForgot, setShowForgot] = useState(false);
+  const [forgotUsername, setForgotUsername] = useState('');
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotResult, setForgotResult] = useState(null);
+  const [forgotError, setForgotError] = useState('');
 
   const handleSignIn = async (e) => {
-    e.preventDefault()
-    if (!username || !password) { setError('Please enter your username and password'); return }
-    setLoading(true); setError('')
+    e.preventDefault();
+    setError('');
+    setLoading(true);
     try {
-      await login(username, password)
-      navigate('/')
+      const res = await api.post('/auth/login', { username, password });
+      login(res.data.user, res.data.access_token, res.data.refresh_token);
+      navigate('/');
     } catch (err) {
-      setError(err.response?.data?.detail || 'Invalid credentials. Please try again.')
+      setError(err.response?.data?.detail || 'Incorrect username or password');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false)
-  }
+  };
 
-  const handleSignUp = async (e) => {
-    e.preventDefault()
-    if (!username || !email || !password || !confirmPwd) { setError('All fields are required'); return }
-    if (password !== confirmPwd) { setError('Passwords do not match'); return }
-    if (password.length < 8) { setError('Password must be at least 8 characters'); return }
-    setLoading(true); setError('')
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    setRegError('');
+    setRegSuccess('');
+    setRegLoading(true);
     try {
-      await api.post('/auth/register', { username, email, password, role })
-      setSuccess('Account created successfully! You can now sign in.')
-      resetForm()
-      setTab('signin')
+      await api.post('/auth/register', {
+        username: regUsername,
+        email: regEmail,
+        password: regPassword,
+        role: regRole,
+      });
+      setRegSuccess('Account created! You can now sign in.');
+      setRegUsername(''); setRegEmail(''); setRegPassword('');
+      setTimeout(() => setTab('signin'), 2000);
     } catch (err) {
-      setError(err.response?.data?.detail || 'Registration failed. Username or email may already exist.')
+      setRegError(err.response?.data?.detail || 'Registration failed. Username may already exist.');
+    } finally {
+      setRegLoading(false);
     }
-    setLoading(false)
-  }
+  };
+
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    setForgotError('');
+    setForgotResult(null);
+    setForgotLoading(true);
+    try {
+      const res = await api.post('/auth/forgot-password', { username: forgotUsername });
+      setForgotResult(res.data.temp_password);
+    } catch (err) {
+      setForgotError(err.response?.data?.detail || 'Username not found. Please check and try again.');
+    } finally {
+      setForgotLoading(false);
+    }
+  };
+
+  const closeForgot = () => {
+    setShowForgot(false);
+    setForgotUsername('');
+    setForgotResult(null);
+    setForgotError('');
+  };
+
+  const s = {
+    page: {
+      minHeight: '100vh',
+      background: '#0f172a',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontFamily: "'Inter', sans-serif",
+    },
+    card: {
+      background: '#1e293b',
+      border: '1px solid #334155',
+      borderRadius: '16px',
+      padding: '2.5rem',
+      width: '100%',
+      maxWidth: '420px',
+    },
+    logo: {
+      textAlign: 'center',
+      marginBottom: '1.5rem',
+    },
+    logoImg: {
+      width: '56px',
+      height: '56px',
+      marginBottom: '0.5rem',
+    },
+    logoText: {
+      fontFamily: "'Rajdhani', sans-serif",
+      fontSize: '1.8rem',
+      fontWeight: 700,
+      color: '#f1f5f9',
+    },
+    logoSL: { color: '#f59e0b' },
+    tagline: { color: '#64748b', fontSize: '0.85rem' },
+    tabs: {
+      display: 'flex',
+      background: '#0f172a',
+      borderRadius: '8px',
+      padding: '4px',
+      marginBottom: '1.5rem',
+    },
+    tabBtn: (active) => ({
+      flex: 1,
+      padding: '0.5rem',
+      border: 'none',
+      borderRadius: '6px',
+      cursor: 'pointer',
+      fontWeight: 600,
+      fontSize: '0.9rem',
+      background: active ? '#1e293b' : 'transparent',
+      color: active ? '#f59e0b' : '#64748b',
+      transition: 'all 0.2s',
+    }),
+    label: {
+      display: 'block',
+      fontSize: '0.75rem',
+      fontWeight: 600,
+      color: '#94a3b8',
+      textTransform: 'uppercase',
+      letterSpacing: '0.05em',
+      marginBottom: '0.4rem',
+      marginTop: '1rem',
+    },
+    input: {
+      width: '100%',
+      background: '#0f172a',
+      border: '1px solid #475569',
+      borderRadius: '8px',
+      color: '#f1f5f9',
+      padding: '0.65rem 0.9rem',
+      fontSize: '0.95rem',
+      outline: 'none',
+      boxSizing: 'border-box',
+    },
+    select: {
+      width: '100%',
+      background: '#0f172a',
+      border: '1px solid #475569',
+      borderRadius: '8px',
+      color: '#f1f5f9',
+      padding: '0.65rem 0.9rem',
+      fontSize: '0.95rem',
+      outline: 'none',
+      boxSizing: 'border-box',
+      cursor: 'pointer',
+    },
+    btn: {
+      width: '100%',
+      background: '#f59e0b',
+      color: '#0f172a',
+      border: 'none',
+      borderRadius: '8px',
+      padding: '0.75rem',
+      fontSize: '1rem',
+      fontWeight: 700,
+      cursor: 'pointer',
+      marginTop: '1.5rem',
+    },
+    error: {
+      background: 'rgba(239,68,68,0.1)',
+      border: '1px solid rgba(239,68,68,0.3)',
+      borderRadius: '8px',
+      color: '#fca5a5',
+      padding: '0.75rem',
+      fontSize: '0.85rem',
+      marginBottom: '0.5rem',
+    },
+    success: {
+      background: 'rgba(16,185,129,0.1)',
+      border: '1px solid rgba(16,185,129,0.3)',
+      borderRadius: '8px',
+      color: '#6ee7b7',
+      padding: '0.75rem',
+      fontSize: '0.85rem',
+      marginBottom: '0.5rem',
+    },
+    forgotLink: {
+      display: 'block',
+      textAlign: 'right',
+      color: '#64748b',
+      fontSize: '0.8rem',
+      marginTop: '0.5rem',
+      cursor: 'pointer',
+      background: 'none',
+      border: 'none',
+      padding: 0,
+      textDecoration: 'underline',
+    },
+    footer: {
+      textAlign: 'center',
+      marginTop: '2rem',
+      color: '#475569',
+      fontSize: '0.75rem',
+      lineHeight: 1.6,
+    },
+    // Modal
+    overlay: {
+      position: 'fixed',
+      inset: 0,
+      background: 'rgba(0,0,0,0.7)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 1000,
+    },
+    modal: {
+      background: '#1e293b',
+      border: '1px solid #334155',
+      borderRadius: '16px',
+      padding: '2rem',
+      width: '100%',
+      maxWidth: '380px',
+    },
+    modalTitle: {
+      fontFamily: "'Rajdhani', sans-serif",
+      fontSize: '1.3rem',
+      fontWeight: 700,
+      color: '#f59e0b',
+      marginBottom: '0.5rem',
+    },
+    modalSubtitle: {
+      color: '#94a3b8',
+      fontSize: '0.85rem',
+      marginBottom: '1.25rem',
+    },
+    tempPassBox: {
+      background: '#0f172a',
+      border: '1px solid #f59e0b',
+      borderRadius: '8px',
+      padding: '1rem',
+      textAlign: 'center',
+      margin: '1rem 0',
+    },
+    tempPass: {
+      fontFamily: 'monospace',
+      fontSize: '1.4rem',
+      fontWeight: 700,
+      color: '#f59e0b',
+      letterSpacing: '0.1em',
+    },
+    modalBtnRow: {
+      display: 'flex',
+      gap: '0.75rem',
+      marginTop: '1rem',
+    },
+    cancelBtn: {
+      flex: 1,
+      padding: '0.6rem',
+      background: 'transparent',
+      border: '1px solid #334155',
+      borderRadius: '8px',
+      color: '#94a3b8',
+      cursor: 'pointer',
+      fontSize: '0.9rem',
+    },
+    submitBtn: {
+      flex: 1,
+      padding: '0.6rem',
+      background: '#f59e0b',
+      border: 'none',
+      borderRadius: '8px',
+      color: '#0f172a',
+      cursor: 'pointer',
+      fontWeight: 700,
+      fontSize: '0.9rem',
+    },
+  };
 
   return (
     <div style={s.page}>
       <div style={s.card}>
-
         {/* Logo */}
-        <div style={s.logoRow}>
-          <img src="/cricksl-favicon.png" alt="CrickSL" style={s.logo} />
-          <span style={s.brand}>Crick<span style={s.gold}>SL</span></span>
+        <div style={s.logo}>
+          <img src="/cricksl-favicon.png" alt="CrickSL" style={s.logoImg}
+            onError={(e) => { e.target.style.display = 'none'; }} />
+          <div style={s.logoText}>Crick<span style={s.logoSL}>SL</span></div>
+          <div style={s.tagline}>T20 Cricket Decision Support System</div>
         </div>
-        <p style={s.tagline}>T20 Cricket Decision Support System</p>
 
         {/* Tabs */}
         <div style={s.tabs}>
-          <button style={{ ...s.tab, ...(tab === 'signin' ? s.tabActive : {}) }}
-            onClick={() => { setTab('signin'); resetForm() }}>
+          <button style={s.tabBtn(tab === 'signin')} onClick={() => { setTab('signin'); setError(''); }}>
             Sign In
           </button>
-          <button style={{ ...s.tab, ...(tab === 'signup' ? s.tabActive : {}) }}
-            onClick={() => { setTab('signup'); resetForm() }}>
+          <button style={s.tabBtn(tab === 'register')} onClick={() => { setTab('register'); setRegError(''); setRegSuccess(''); }}>
             Create Account
           </button>
         </div>
 
-        {error   && <div style={s.alertError}>{error}</div>}
-        {success && <div style={s.alertSuccess}>{success}</div>}
-
-        {/* Sign In */}
+        {/* Sign In Form */}
         {tab === 'signin' && (
           <form onSubmit={handleSignIn}>
-            <div className="form-group">
-              <label className="form-label">Username</label>
-              <input className="form-control" type="text" placeholder="Enter your username"
-                value={username} onChange={e => setUsername(e.target.value)} autoFocus />
-            </div>
-            <div className="form-group">
-              <label className="form-label">Password</label>
-              <input className="form-control" type="password" placeholder="Enter your password"
-                value={password} onChange={e => setPassword(e.target.value)} />
-            </div>
-            <button type="submit" className="btn btn-gold btn-full" style={s.btn} disabled={loading}>
-              {loading ? 'Signing in...' : 'Sign In'}
+            {error && <div style={s.error}>{error}</div>}
+            <label style={s.label}>Username</label>
+            <input style={s.input} value={username}
+              onChange={e => setUsername(e.target.value)} required autoComplete="username" />
+            <label style={s.label}>Password</label>
+            <input style={s.input} type="password" value={password}
+              onChange={e => setPassword(e.target.value)} required autoComplete="current-password" />
+            <button type="button" style={s.forgotLink} onClick={() => setShowForgot(true)}>
+              Forgot password?
+            </button>
+            <button style={s.btn} type="submit" disabled={loading}>
+              {loading ? 'Signing in…' : 'Sign In'}
             </button>
           </form>
         )}
 
-        {/* Sign Up */}
-        {tab === 'signup' && (
-          <form onSubmit={handleSignUp}>
-            <div style={s.twoCol}>
-              <div className="form-group" style={{ flex: 1 }}>
-                <label className="form-label">Username</label>
-                <input className="form-control" type="text" placeholder="Choose a username"
-                  value={username} onChange={e => setUsername(e.target.value)} autoFocus />
-              </div>
-              <div className="form-group" style={{ flex: 1 }}>
-                <label className="form-label">Role</label>
-                <select className="form-control" value={role} onChange={e => setRole(e.target.value)}>
-                  <option value="analyst">Analyst</option>
-                  <option value="coach">Coach</option>
-                  <option value="player">Player</option>
-                </select>
-              </div>
-            </div>
-            <div className="form-group">
-              <label className="form-label">Email Address</label>
-              <input className="form-control" type="email" placeholder="Enter your email address"
-                value={email} onChange={e => setEmail(e.target.value)} />
-            </div>
-            <div style={s.twoCol}>
-              <div className="form-group" style={{ flex: 1 }}>
-                <label className="form-label">Password</label>
-                <input className="form-control" type="password" placeholder="Min. 8 characters"
-                  value={password} onChange={e => setPassword(e.target.value)} />
-              </div>
-              <div className="form-group" style={{ flex: 1 }}>
-                <label className="form-label">Confirm Password</label>
-                <input className="form-control" type="password" placeholder="Re-enter password"
-                  value={confirmPwd} onChange={e => setConfirmPwd(e.target.value)} />
-              </div>
-            </div>
-            <div style={s.roleInfo}>
-              <span style={s.roleInfoIcon}>ℹ️</span>
-              <span>Admin accounts can only be created by existing administrators.</span>
-            </div>
-            <button type="submit" className="btn btn-gold btn-full" style={s.btn} disabled={loading}>
-              {loading ? 'Creating Account...' : 'Create Account'}
+        {/* Register Form */}
+        {tab === 'register' && (
+          <form onSubmit={handleRegister}>
+            {regError && <div style={s.error}>{regError}</div>}
+            {regSuccess && <div style={s.success}>{regSuccess}</div>}
+            <label style={s.label}>Username</label>
+            <input style={s.input} value={regUsername}
+              onChange={e => setRegUsername(e.target.value)} required />
+            <label style={s.label}>Email</label>
+            <input style={s.input} type="email" value={regEmail}
+              onChange={e => setRegEmail(e.target.value)} required />
+            <label style={s.label}>Password</label>
+            <input style={s.input} type="password" value={regPassword}
+              onChange={e => setRegPassword(e.target.value)} required />
+            <label style={s.label}>Role</label>
+            <select style={s.select} value={regRole} onChange={e => setRegRole(e.target.value)}>
+              <option value="analyst">Analyst</option>
+              <option value="coach">Coach</option>
+              <option value="player">Player</option>
+            </select>
+            <button style={s.btn} type="submit" disabled={regLoading}>
+              {regLoading ? 'Creating account…' : 'Create Account'}
             </button>
           </form>
         )}
 
-        {/* Footer */}
         <div style={s.footer}>
-          <div style={s.divider} />
-          <p style={s.footerText}>© {new Date().getFullYear()} CrickSL. All rights reserved.</p>
-          <p style={s.footerSub}>Sri Lanka Cricket Analytics Platform</p>
+          © 2026 CrickSL. All rights reserved.<br />
+          Sri Lanka Cricket Analytics Platform
         </div>
       </div>
-    </div>
-  )
-}
 
-const s = {
-  page: {
-    minHeight: '100vh', background: 'var(--bg-primary)',
-    display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem',
-  },
-  card: {
-    background: 'var(--bg-card)', border: '1px solid var(--border)',
-    borderRadius: '16px', padding: '2.5rem', width: '100%', maxWidth: '480px',
-    boxShadow: '0 8px 40px rgba(0,0,0,0.5)',
-  },
-  logoRow: {
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    gap: '0.65rem', marginBottom: '0.4rem',
-  },
-  logo: { width: '42px', height: '42px', borderRadius: '8px' },
-  brand: {
-    fontFamily: "'Rajdhani', sans-serif", fontWeight: 700,
-    fontSize: '2rem', color: '#f1f5f9', letterSpacing: '0.04em',
-  },
-  gold: { color: '#f59e0b' },
-  tagline: {
-    textAlign: 'center', color: 'var(--text-secondary)',
-    fontSize: '0.82rem', marginBottom: '1.75rem',
-  },
-  tabs: {
-    display: 'flex', gap: '4px', background: 'rgba(255,255,255,0.04)',
-    borderRadius: '10px', padding: '4px', marginBottom: '1.5rem',
-  },
-  tab: {
-    flex: 1, padding: '0.6rem', borderRadius: '7px', border: 'none',
-    cursor: 'pointer', fontSize: '0.88rem', fontWeight: 500,
-    background: 'transparent', color: 'var(--text-secondary)', transition: 'all 0.18s',
-  },
-  tabActive: {
-    background: 'var(--bg-secondary)', color: '#f59e0b',
-    boxShadow: '0 1px 4px rgba(0,0,0,0.3)',
-  },
-  alertError: {
-    background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)',
-    color: '#f87171', borderRadius: '8px', padding: '0.75rem 1rem',
-    fontSize: '0.85rem', marginBottom: '1rem',
-  },
-  alertSuccess: {
-    background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)',
-    color: '#4ade80', borderRadius: '8px', padding: '0.75rem 1rem',
-    fontSize: '0.85rem', marginBottom: '1rem',
-  },
-  twoCol: { display: 'flex', gap: '0.75rem' },
-  roleInfo: {
-    display: 'flex', gap: '0.5rem', alignItems: 'flex-start',
-    background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.2)',
-    borderRadius: '8px', padding: '0.65rem 0.85rem',
-    fontSize: '0.78rem', color: '#93c5fd', marginBottom: '1rem',
-  },
-  roleInfoIcon: { flexShrink: 0, fontSize: '0.85rem' },
-  btn: { marginTop: '0.25rem', padding: '0.85rem', fontSize: '0.95rem' },
-  footer: { marginTop: '1.75rem', textAlign: 'center' },
-  divider: { height: '1px', background: 'var(--border)', marginBottom: '1rem' },
-  footerText: { color: 'var(--text-muted)', fontSize: '0.75rem', marginBottom: '0.2rem' },
-  footerSub: { color: 'var(--text-muted)', fontSize: '0.7rem' },
+      {/* Forgot Password Modal */}
+      {showForgot && (
+        <div style={s.overlay} onClick={closeForgot}>
+          <div style={s.modal} onClick={e => e.stopPropagation()}>
+            <div style={s.modalTitle}>🔑 Reset Password</div>
+
+            {!forgotResult ? (
+              <>
+                <div style={s.modalSubtitle}>
+                  Enter your username and we'll generate a temporary password for you.
+                </div>
+                {forgotError && <div style={s.error}>{forgotError}</div>}
+                <form onSubmit={handleForgotPassword}>
+                  <label style={s.label}>Username</label>
+                  <input style={s.input} value={forgotUsername}
+                    onChange={e => setForgotUsername(e.target.value)}
+                    required placeholder="Enter your username" />
+                  <div style={s.modalBtnRow}>
+                    <button type="button" style={s.cancelBtn} onClick={closeForgot}>
+                      Cancel
+                    </button>
+                    <button type="submit" style={s.submitBtn} disabled={forgotLoading}>
+                      {forgotLoading ? 'Generating…' : 'Get Temp Password'}
+                    </button>
+                  </div>
+                </form>
+              </>
+            ) : (
+              <>
+                <div style={s.modalSubtitle}>
+                  Your temporary password has been generated. Use it to sign in, then change your password from account settings.
+                </div>
+                <div style={s.tempPassBox}>
+                  <div style={{ color: '#94a3b8', fontSize: '0.75rem', marginBottom: '0.5rem' }}>
+                    TEMPORARY PASSWORD
+                  </div>
+                  <div style={s.tempPass}>{forgotResult}</div>
+                </div>
+                <div style={{ color: '#f59e0b', fontSize: '0.8rem', marginBottom: '1rem' }}>
+                  ⚠️ This password is valid for one login. You will be prompted to change it.
+                </div>
+                <button style={{ ...s.submitBtn, width: '100%' }}
+                  onClick={() => { closeForgot(); setPassword(forgotResult); setUsername(forgotUsername); }}>
+                  Sign In Now
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
