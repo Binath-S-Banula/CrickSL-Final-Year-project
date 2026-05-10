@@ -35,14 +35,7 @@ export default function Login() {
     setError("");
     setLoading(true);
     try {
-      const res = await api.post(
-        "/auth/login",
-        JSON.stringify({ username, password }),
-        {
-          headers: { "Content-Type": "application/json" },
-        },
-      );
-      login(res.data.user, res.data.access_token, res.data.refresh_token);
+      await login(username, password);
       navigate("/");
     } catch (err) {
       setError(err.response?.data?.detail || "Incorrect username or password");
