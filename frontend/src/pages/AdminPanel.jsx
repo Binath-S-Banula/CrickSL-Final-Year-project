@@ -4,33 +4,31 @@ import { useNavigate } from 'react-router-dom'
 import api from '../api/api'
 
 const s = {
-  page:     { minHeight: '100vh', background: '#0f172a', padding: '2rem', fontFamily: "'Inter', sans-serif", color: '#e2e8f0' },
-  maxW:     { maxWidth: '1100px', margin: '0 auto' },
-  title:    { fontFamily: "'Rajdhani', sans-serif", fontSize: '2rem', fontWeight: 700, color: '#f59e0b', marginBottom: '0.25rem' },
-  subtitle: { color: '#64748b', fontSize: '0.9rem', marginBottom: '2rem' },
-  tabRow:   { display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', flexWrap: 'wrap' },
-  tab: (a) => ({ padding: '0.5rem 1.2rem', borderRadius: '8px', border: a ? '1px solid #f59e0b' : '1px solid #334155', background: a ? 'rgba(245,158,11,0.1)' : 'transparent', color: a ? '#f59e0b' : '#64748b', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem' }),
-  card:     { background: '#1e293b', border: '1px solid #334155', borderRadius: '12px', padding: '1.5rem', marginBottom: '1.5rem' },
-  cardTitle:{ fontFamily: "'Rajdhani', sans-serif", fontSize: '1.1rem', fontWeight: 700, color: '#f59e0b', marginBottom: '1rem', paddingBottom: '0.75rem', borderBottom: '1px solid #334155' },
-  label:    { display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.4rem' },
-  input:    { width: '100%', background: '#0f172a', border: '1px solid #475569', borderRadius: '8px', color: '#f1f5f9', padding: '0.6rem 0.8rem', fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box' },
-  select:   { width: '100%', background: '#0f172a', border: '1px solid #475569', borderRadius: '8px', color: '#f1f5f9', padding: '0.6rem 0.8rem', fontSize: '0.9rem', outline: 'none', cursor: 'pointer', boxSizing: 'border-box' },
-  btn:      { background: '#f59e0b', color: '#0f172a', border: 'none', borderRadius: '8px', padding: '0.55rem 1.2rem', fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer' },
-  btnSm:    { background: 'transparent', border: '1px solid #334155', borderRadius: '6px', padding: '0.3rem 0.7rem', fontSize: '0.75rem', cursor: 'pointer', color: '#94a3b8' },
-  btnDanger:{ background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '6px', padding: '0.3rem 0.7rem', fontSize: '0.75rem', cursor: 'pointer', color: '#f87171' },
+  page:      { minHeight: '100vh', background: 'var(--bg-primary)', padding: '2rem', fontFamily: "'Inter', sans-serif", color: 'var(--text-primary)' },
+  maxW:      { maxWidth: '1100px', margin: '0 auto' },
+  title:     { fontFamily: "'Rajdhani', sans-serif", fontSize: '2rem', fontWeight: 700, color: '#f59e0b', marginBottom: '0.25rem' },
+  subtitle:  { color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '2rem' },
+  tabRow:    { display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', flexWrap: 'wrap' },
+  tab: (a) => ({ padding: '0.5rem 1.2rem', borderRadius: '8px', border: a ? '1px solid #f59e0b' : '1px solid var(--border-color)', background: a ? 'rgba(245,158,11,0.1)' : 'transparent', color: a ? '#f59e0b' : 'var(--text-secondary)', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem' }),
+  card:      { background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '1.5rem', marginBottom: '1.5rem' },
+  cardTitle: { fontFamily: "'Rajdhani', sans-serif", fontSize: '1.1rem', fontWeight: 700, color: '#f59e0b', marginBottom: '1rem', paddingBottom: '0.75rem', borderBottom: '1px solid var(--border-color)' },
+  label:     { display: 'block', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.4rem' },
+  input:     { width: '100%', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)', padding: '0.6rem 0.8rem', fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box' },
+  select:    { width: '100%', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)', padding: '0.6rem 0.8rem', fontSize: '0.9rem', outline: 'none', cursor: 'pointer', boxSizing: 'border-box' },
+  btn:       { background: '#f59e0b', color: '#0f172a', border: 'none', borderRadius: '8px', padding: '0.55rem 1.2rem', fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer' },
+  btnSm:     { background: 'transparent', border: '1px solid var(--border-color)', borderRadius: '6px', padding: '0.3rem 0.7rem', fontSize: '0.75rem', cursor: 'pointer', color: 'var(--text-secondary)' },
+  btnDanger: { background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '6px', padding: '0.3rem 0.7rem', fontSize: '0.75rem', cursor: 'pointer', color: '#f87171' },
   btnSuccess:{ background: 'rgba(16,185,129,0.15)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: '6px', padding: '0.3rem 0.7rem', fontSize: '0.75rem', cursor: 'pointer', color: '#34d399' },
-  table:    { width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' },
-  th:       { textAlign: 'left', padding: '0.6rem 0.8rem', background: '#0f172a', color: '#64748b', fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '1px solid #334155' },
-  td:       { padding: '0.65rem 0.8rem', borderBottom: '1px solid #1e293b', color: '#cbd5e1', verticalAlign: 'middle' },
+  table:     { width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' },
+  th:        { textAlign: 'left', padding: '0.6rem 0.8rem', background: 'var(--bg-primary)', color: 'var(--text-secondary)', fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '1px solid var(--border-color)' },
+  td:        { padding: '0.65rem 0.8rem', borderBottom: '1px solid var(--border-color)', color: 'var(--text-primary)', verticalAlign: 'middle' },
   badge: (c) => ({ display: 'inline-block', padding: '0.15rem 0.55rem', borderRadius: '20px', fontSize: '0.7rem', fontWeight: 700, background: c === 'green' ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)', color: c === 'green' ? '#34d399' : '#f87171', border: `1px solid ${c === 'green' ? '#10b981' : '#ef4444'}` }),
-  alert:    { background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: '8px', color: '#6ee7b7', padding: '0.75rem', fontSize: '0.85rem', marginBottom: '1rem' },
-  error:    { background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '8px', color: '#fca5a5', padding: '0.75rem', fontSize: '0.85rem', marginBottom: '1rem' },
-  grid2:    { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' },
-  grid3:    { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' },
-  statBox:  { background: '#0f172a', border: '1px solid #334155', borderRadius: '10px', padding: '1rem', textAlign: 'center' },
-  statVal:  { fontFamily: "'Rajdhani', sans-serif", fontSize: '1.8rem', fontWeight: 700, color: '#f59e0b', display: 'block' },
-  statLbl:  { fontSize: '0.7rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' },
-  formRow:  { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr auto', gap: '0.75rem', alignItems: 'end', marginBottom: '1rem' },
+  alert:     { background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: '8px', color: '#6ee7b7', padding: '0.75rem', fontSize: '0.85rem', marginBottom: '1rem' },
+  error:     { background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '8px', color: '#fca5a5', padding: '0.75rem', fontSize: '0.85rem', marginBottom: '1rem' },
+  grid2:     { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' },
+  statBox:   { background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '1rem', textAlign: 'center' },
+  statVal:   { fontFamily: "'Rajdhani', sans-serif", fontSize: '1.8rem', fontWeight: 700, color: '#f59e0b', display: 'block' },
+  statLbl:   { fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' },
 }
 
 // ── Users Tab ─────────────────────────────────────────────────────────
@@ -157,7 +155,6 @@ function VenuesTab() {
       {msg && <div style={s.alert}>✓ {msg}</div>}
       {err && <div style={s.error}>⚠️ {err}</div>}
 
-      {/* Filters + Add */}
       <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
         <input style={{ ...s.input, width: '200px' }} placeholder="Search venues..." value={search} onChange={e => setSearch(e.target.value)} />
         <select style={{ ...s.select, width: '180px' }} value={filterCountry} onChange={e => setFilterCountry(e.target.value)}>
@@ -167,7 +164,6 @@ function VenuesTab() {
         <button style={s.btn} onClick={() => setShowAdd(!showAdd)}>+ Add Venue</button>
       </div>
 
-      {/* Add form */}
       {showAdd && (
         <div style={{ ...s.card, borderColor: 'rgba(245,158,11,0.3)' }}>
           <div style={s.cardTitle}>➕ Add New Venue</div>
@@ -201,7 +197,6 @@ function VenuesTab() {
         </div>
       )}
 
-      {/* Table */}
       <div style={s.card}>
         <div style={s.cardTitle}>🏟️ Venue Display List ({filtered.length})</div>
         <table style={s.table}>
@@ -220,7 +215,7 @@ function VenuesTab() {
                         {countries.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
                       </select>
                     </td>
-                    <td style={s.td}><span style={{ color: '#64748b', fontSize: '0.8rem' }}>{v.raw_name}</span></td>
+                    <td style={s.td}><span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>{v.raw_name}</span></td>
                     <td style={s.td}><span style={s.badge(v.is_active ? 'green' : 'red')}>{v.is_active ? 'Active' : 'Hidden'}</span></td>
                     <td style={s.td}>
                       <div style={{ display: 'flex', gap: '0.4rem' }}>
@@ -231,9 +226,12 @@ function VenuesTab() {
                   </>
                 ) : (
                   <>
-                    <td style={s.td}><b style={{ color: '#f1f5f9' }}>{v.display_name}</b>{v.notes && <div style={{ fontSize: '0.72rem', color: '#64748b', marginTop: '2px' }}>📝 {v.notes}</div>}</td>
-                    <td style={s.td}><span style={{ color: '#94a3b8', fontSize: '0.85rem' }}>{v.country}</span></td>
-                    <td style={s.td}><span style={{ color: '#475569', fontSize: '0.78rem' }}>{v.raw_name}</span></td>
+                    <td style={s.td}>
+                      <b style={{ color: 'var(--text-primary)' }}>{v.display_name}</b>
+                      {v.notes && <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '2px' }}>📝 {v.notes}</div>}
+                    </td>
+                    <td style={s.td}><span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>{v.country}</span></td>
+                    <td style={s.td}><span style={{ color: 'var(--text-muted)', fontSize: '0.78rem' }}>{v.raw_name}</span></td>
                     <td style={s.td}><span style={s.badge(v.is_active ? 'green' : 'red')}>{v.is_active ? 'Active' : 'Hidden'}</span></td>
                     <td style={s.td}>
                       <div style={{ display: 'flex', gap: '0.4rem' }}>
@@ -247,7 +245,7 @@ function VenuesTab() {
               </tr>
             ))}
             {filtered.length === 0 && (
-              <tr><td colSpan={5} style={{ ...s.td, textAlign: 'center', color: '#475569', padding: '2rem' }}>No venues found. Add one above.</td></tr>
+              <tr><td colSpan={5} style={{ ...s.td, textAlign: 'center', color: 'var(--text-muted)', padding: '2rem' }}>No venues found. Add one above.</td></tr>
             )}
           </tbody>
         </table>
@@ -297,7 +295,6 @@ function CountriesTab() {
       {msg && <div style={s.alert}>✓ {msg}</div>}
       {err && <div style={s.error}>⚠️ {err}</div>}
 
-      {/* Add new */}
       <div style={s.card}>
         <div style={s.cardTitle}>➕ Add Country</div>
         <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr auto', gap: '0.75rem', alignItems: 'end' }}>
@@ -317,7 +314,6 @@ function CountriesTab() {
         </div>
       </div>
 
-      {/* Table */}
       <div style={s.card}>
         <div style={s.cardTitle}>🌍 Cricket Playing Nations ({countries.length})</div>
         <table style={s.table}>
@@ -328,7 +324,7 @@ function CountriesTab() {
           <tbody>
             {countries.map((c, i) => (
               <tr key={c.id}>
-                <td style={{ ...s.td, color: '#475569', width: '40px' }}>{i + 1}</td>
+                <td style={{ ...s.td, color: 'var(--text-muted)', width: '40px' }}>{i + 1}</td>
                 {editId === c.id ? (
                   <>
                     <td style={s.td}><input style={s.input} defaultValue={c.name} onChange={e => setEditData({ ...editData, name: e.target.value })} /></td>
@@ -343,8 +339,8 @@ function CountriesTab() {
                   </>
                 ) : (
                   <>
-                    <td style={s.td}><b style={{ color: '#f1f5f9' }}>{c.name}</b></td>
-                    <td style={s.td}><span style={{ fontFamily: 'monospace', color: '#94a3b8', fontSize: '0.85rem' }}>{c.code || '—'}</span></td>
+                    <td style={s.td}><b style={{ color: 'var(--text-primary)' }}>{c.name}</b></td>
+                    <td style={s.td}><span style={{ fontFamily: 'monospace', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>{c.code || '—'}</span></td>
                     <td style={s.td}><span style={s.badge(c.is_active ? 'green' : 'red')}>{c.is_active ? 'Active' : 'Inactive'}</span></td>
                     <td style={s.td}>
                       <div style={{ display: 'flex', gap: '0.4rem' }}>
@@ -394,19 +390,19 @@ function DatasetTab() {
             ))}
           </div>
         ) : (
-          <div style={{ color: '#64748b', padding: '1rem' }}>Loading dataset info...</div>
+          <div style={{ color: 'var(--text-muted)', padding: '1rem' }}>Loading dataset info...</div>
         )}
       </div>
 
       <div style={s.card}>
         <div style={s.cardTitle}>🔄 Updating the Dataset</div>
-        <div style={{ color: '#94a3b8', fontSize: '0.9rem', lineHeight: 1.8 }}>
+        <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.8 }}>
           <p style={{ marginBottom: '1rem' }}>To update the dataset with newer Cricsheet data, follow these steps:</p>
           <ol style={{ paddingLeft: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             <li>Download the latest <b style={{ color: '#f59e0b' }}>T20 International JSON</b> package from <b>cricsheet.org/downloads</b></li>
             <li>Extract the ZIP into <b style={{ color: '#f59e0b' }}>backend/data/new_matches/</b></li>
             <li>Run the import script from your backend CMD:
-              <div style={{ background: '#0f172a', border: '1px solid #334155', borderRadius: '6px', padding: '0.6rem 1rem', marginTop: '0.4rem', fontFamily: 'monospace', fontSize: '0.8rem', color: '#10b981' }}>
+              <div style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '6px', padding: '0.6rem 1rem', marginTop: '0.4rem', fontFamily: 'monospace', fontSize: '0.8rem', color: '#10b981' }}>
                 venv\Scripts\python.exe scripts/import_cricsheet.py
               </div>
             </li>
@@ -423,7 +419,7 @@ function DatasetTab() {
 
 // ── Main AdminPanel ───────────────────────────────────────────────────
 export default function AdminPanel() {
-  const { user, isAdmin } = useAuth()
+  const { isAdmin } = useAuth()
   const navigate = useNavigate()
   const [tab, setTab] = useState('users')
 
