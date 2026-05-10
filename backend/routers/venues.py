@@ -9,8 +9,18 @@ from typing import List, Optional
 router = APIRouter()
 
 @router.get("/", response_model=List[VenueOut])
-def list_venues(db: Session = Depends(get_db)):
-    return db.query(Venue).order_by(Venue.name).all()
+def list_venues(sl_only: bool = False, db: Session = Depends(get_db)):
+    SL_KEYWORDS = [
+        'colombo', 'kandy', 'galle', 'hambantota', 'dambulla',
+        'pallekele', 'premadasa', 'sara oval', 'sinhalese', 'rangiri',
+        'mahinda', 'moratuwa', 'bloomfield', 'sri lanka', 'p sara'
+    ]
+    query = db.query(Venue)
+    if sl_only:
+        from sqlalchemy import or_
+        filters = [Venue.name.ilike(f'%{kw}%') for kw in SL_KEYWORDS]
+        query = query.filter(or_(*filters))
+    return query.order_by(Venue.name).all()
 
 @router.get("/{venue_id}/stats", response_model=VenueStats)
 def venue_stats(venue_id: int, opponent_team: Optional[str] = Query(None), db: Session = Depends(get_db)):
