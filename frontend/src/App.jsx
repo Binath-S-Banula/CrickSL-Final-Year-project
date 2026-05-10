@@ -12,6 +12,7 @@ import AdminPanel from "./pages/AdminPanel";
 import PlayerDashboard from "./pages/PlayerDashboard";
 import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
+import ChatBot from "./components/ChatBot";
 
 export default function App() {
   return (
@@ -25,6 +26,7 @@ export default function App() {
               element={
                 <ProtectedRoute>
                   <Navbar />
+                  <ChatBot />
                   <Routes>
                     <Route path="/" element={<Home />} />
                     <Route path="/venue-weather" element={<VenueWeather />} />
