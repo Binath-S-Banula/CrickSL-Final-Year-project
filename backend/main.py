@@ -11,6 +11,7 @@ from routers import venues, players, matches, predictions, reports
 from routers import weather, dls, xi_recommendation
 from routers.auth import router as auth_router
 from routers.player_dashboard import router as player_dashboard_router
+from routers.admin_data import router as admin_data_router
 
 app = FastAPI(
     title="CrickSL API",
@@ -32,6 +33,7 @@ app.include_router(auth_router)                              # /auth/*
 app.include_router(player_dashboard_router, prefix="/players", tags=["player-dashboard"])                  # /players/dashboard/*
 app.include_router(venues.router,           prefix="/venues")     # /venues/*
 app.include_router(players.router,          prefix="/players")    # /players/*
+app.include_router(admin_data_router, prefix="/admin-data", tags=["admin-data"])
 app.include_router(matches.router,          prefix="/matches")    # /matches/*
 app.include_router(predictions.router,      prefix="/predict")    # /predict/*
 app.include_router(reports.router)                           # /prematch (no prefix)
