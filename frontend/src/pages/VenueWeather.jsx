@@ -1,5 +1,104 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { getVenues, getVenueStats, getVenueParScore, getVenuePhaseStats, getWeatherConditions, TEAMS } from '../api/api'
+
+// Searchable venue combobox component
+function VenueSearch({ venues, venueId, onSelect }) {
+  const [query, setQuery] = useState('')
+  const [open, setOpen] = useState(false)
+  const [highlighted, setHighlighted] = useState(0)
+  const ref = useRef(null)
+
+  // Set input to selected venue name when venueId changes externally
+  useEffect(() => {
+    if (venueId) {
+      const v = venues.find(v => String(v.id) === String(venueId))
+      if (v) setQuery(v.name)
+    } else {
+      setQuery('')
+    }
+  }, [venueId, venues])
+
+  // Close on outside click
+  useEffect(() => {
+    function handler(e) {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
+
+  const filtered = venues.filter(v =>
+    v.name.toLowerCase().includes(query.toLowerCase())
+  ).slice(0, 12)
+
+  const handleKey = (e) => {
+    if (!open) { setOpen(true); return }
+    if (e.key === 'ArrowDown') { setHighlighted(h => Math.min(h + 1, filtered.length - 1)); e.preventDefault() }
+    else if (e.key === 'ArrowUp') { setHighlighted(h => Math.max(h - 1, 0)); e.preventDefault() }
+    else if (e.key === 'Enter' && filtered[highlighted]) {
+      onSelect(filtered[highlighted])
+      setQuery(filtered[highlighted].name)
+      setOpen(false)
+    }
+    else if (e.key === 'Escape') setOpen(false)
+  }
+
+  return (
+    <div ref={ref} style={{ position: 'relative' }}>
+      <div style={{ position: 'relative' }}>
+        <input
+          className="form-control"
+          value={query}
+          placeholder="Type to search venues..."
+          onChange={e => { setQuery(e.target.value); setOpen(true); setHighlighted(0) }}
+          onFocus={() => setOpen(true)}
+          onKeyDown={handleKey}
+          autoComplete="off"
+          style={{ paddingRight: '2rem' }}
+        />
+        {/* Clear button */}
+        {query && (
+          <button
+            type="button"
+            onClick={() => { setQuery(''); onSelect(null); setOpen(false) }}
+            style={{ position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#64748b', fontSize: '1rem', padding: 0, lineHeight: 1 }}
+          >×</button>
+        )}
+      </div>
+
+      {open && filtered.length > 0 && (
+        <div style={{
+          position: 'absolute', top: 'calc(100% + 4px)', left: 0, right: 0,
+          background: '#1e293b', border: '1px solid #334155', borderRadius: '8px',
+          maxHeight: '260px', overflowY: 'auto', zIndex: 999,
+          boxShadow: '0 8px 24px rgba(0,0,0,0.4)'
+        }}>
+          {filtered.map((v, i) => (
+            <div
+              key={v.id}
+              onMouseDown={() => { onSelect(v); setQuery(v.name); setOpen(false) }}
+              style={{
+                padding: '0.6rem 1rem', cursor: 'pointer', fontSize: '0.9rem',
+                background: i === highlighted ? 'rgba(245,158,11,0.15)' : 'transparent',
+                color: i === highlighted ? '#f59e0b' : '#cbd5e1',
+                borderBottom: i < filtered.length - 1 ? '1px solid #334155' : 'none',
+              }}
+              onMouseEnter={() => setHighlighted(i)}
+            >
+              {v.name}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {open && query.length > 0 && filtered.length === 0 && (
+        <div style={{ position: 'absolute', top: 'calc(100% + 4px)', left: 0, right: 0, background: '#1e293b', border: '1px solid #334155', borderRadius: '8px', padding: '0.75rem 1rem', color: '#64748b', fontSize: '0.85rem', zIndex: 999 }}>
+          No venues found for "{query}"
+        </div>
+      )}
+    </div>
+  )
+}
 
 export default function VenueWeather() {
   const [venues, setVenues] = useState([])
@@ -16,11 +115,10 @@ export default function VenueWeather() {
     getVenues().then(r => setVenues(r.data)).catch(() => setError('Cannot connect to backend. Make sure server is running.'))
   }, [])
 
-  const handleVenueChange = (e) => {
-    const id = e.target.value
-    setVenueId(id)
-    const v = venues.find(v => String(v.id) === id)
-    if (v) setVenueName(v.name)
+  const handleVenueSelect = (v) => {
+    if (!v) { setVenueId(''); setVenueName(''); setResults(null); return }
+    setVenueId(String(v.id))
+    setVenueName(v.name)
     setResults(null)
   }
 
@@ -63,13 +161,13 @@ export default function VenueWeather() {
       {/* Controls */}
       <div className="card" style={{ marginBottom: '1.5rem' }}>
         <div className="grid-2" style={{ gap: '1rem' }}>
+
+          {/* Searchable Venue Dropdown */}
           <div className="form-group" style={{ marginBottom: 0 }}>
             <label className="form-label">Venue</label>
-            <select className="form-control" value={venueId} onChange={handleVenueChange}>
-              <option value="">Select venue...</option>
-              {venues.map(v => <option key={v.id} value={v.id}>{v.name}</option>)}
-            </select>
+            <VenueSearch venues={venues} venueId={venueId} onSelect={handleVenueSelect} />
           </div>
+
           <div className="form-group" style={{ marginBottom: 0 }}>
             <label className="form-label">Opponent Team</label>
             <select className="form-control" value={opponent} onChange={e => setOpponent(e.target.value)}>
@@ -221,7 +319,6 @@ export default function VenueWeather() {
               <div style={{ marginBottom: '0.75rem' }}>
                 <span className="badge badge-blue">{results.weather.weather_source}</span>
               </div>
-
               <div className="grid-3" style={{ marginBottom: '1.5rem' }}>
                 {[
                   { label: 'Humidity', value: `${results.weather.conditions?.humidity_pct}%`, icon: '💧' },
@@ -235,7 +332,6 @@ export default function VenueWeather() {
                   </div>
                 ))}
               </div>
-
               <div className="grid-3" style={{ marginBottom: '1.5rem' }}>
                 {[
                   { label: 'Dew Risk', score: results.weather.risk_scores?.dew_risk, badge: results.weather.risk_scores?.dew_risk_label },
@@ -255,20 +351,16 @@ export default function VenueWeather() {
                   </div>
                 ))}
               </div>
-
               {results.weather.sl_impact_analysis?.length > 0 && (
                 <div>
                   <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '0.75rem' }}>
                     SL Impact Analysis
                   </div>
                   {results.weather.sl_impact_analysis.map((item, i) => (
-                    <div key={i} className="alert alert-info" style={{ marginBottom: '0.5rem' }}>
-                      {item}
-                    </div>
+                    <div key={i} className="alert alert-info" style={{ marginBottom: '0.5rem' }}>{item}</div>
                   ))}
                 </div>
               )}
-
               <div className="divider" />
               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                 <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Toss Recommendation</div>
