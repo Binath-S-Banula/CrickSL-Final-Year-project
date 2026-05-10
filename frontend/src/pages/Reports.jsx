@@ -1,22 +1,14 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend,
 } from 'recharts'
 import api from '../api/api'
 
-const VENUES = [
-  'R Premadasa Stadium', 'Pallekele International Cricket Stadium',
-  'Galle International Stadium', 'Sinhalese Sports Club Ground',
-  'Rangiri Dambulla International Stadium',
-]
-
 const TEAMS = [
   'India', 'Australia', 'England', 'Pakistan', 'South Africa',
   'New Zealand', 'West Indies', 'Bangladesh', 'Afghanistan', 'Zimbabwe',
 ]
-
-// Backend now filters by rolling 3-year window — no hardcoded list needed
 
 const COLORS = {
   powerplay: '#f59e0b', middle: '#3b82f6', death: '#10b981',
@@ -34,6 +26,13 @@ export default function Reports() {
   const [report, setReport]   = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError]     = useState('')
+  const [venues, setVenues]   = useState([])
+
+  useEffect(() => {
+    api.get('/admin-data/venues?country=Sri Lanka')
+      .then(r => setVenues(r.data))
+      .catch(() => {})
+  }, [])
 
   const generateReport = async () => {
     if (!venue || !team2) { setError('Please select a venue and opponent team'); return }
@@ -51,7 +50,6 @@ export default function Reports() {
 
   const handlePrint = () => window.print()
 
-  // Filter to active players only
   const activeBatters = report?.team1_top_batters || []
   const activeBowlers = report?.team1_top_bowlers || []
 
@@ -80,7 +78,6 @@ export default function Reports() {
 
   return (
     <>
-      {/* Print styles */}
       <style>{`
         @media print {
           .no-print { display: none !important; }
@@ -114,7 +111,9 @@ export default function Reports() {
                 <label className="form-label">Venue</label>
                 <select className="form-control" value={venue} onChange={e => setVenue(e.target.value)}>
                   <option value="">Select venue...</option>
-                  {VENUES.map(v => <option key={v} value={v}>{v}</option>)}
+                  {venues.map(v => (
+                    <option key={v.id} value={v.raw_name}>{v.display_name}</option>
+                  ))}
                 </select>
               </div>
               <div className="form-group">
@@ -145,7 +144,6 @@ export default function Reports() {
 
           {report && !loading && (
             <>
-              {/* Print header - only shows when printing */}
               <div style={{ display: 'none' }} className="print-header">
                 <h2>CrickSL — Pre-Match Report</h2>
                 <p>{venue} | Sri Lanka vs {team2} | {new Date().toLocaleDateString()}</p>
@@ -175,8 +173,8 @@ export default function Reports() {
                     </strong>
                     <p style={{ margin: '0.2rem 0 0', fontSize: '0.82rem', color: '#94a3b8', lineHeight: 1.5 }}>
                       No Sri Lanka matches found at this venue within the last 3 years in the current dataset.
-                      Player statistics below are based on the last <strong style={{ color: '#fbbf24' }}>{report.player_data_years} years</strong> of available data.
-                      Some retired players may appear. For the most current analysis, update the match dataset.
+                      Player statistics below are based on the last <strong style={{ color: '#fbbf24' }}>{report.player_data_years} years</strong> of
+                      available data. Some retired players may appear. For the most current analysis, update the match dataset.
                     </p>
                   </div>
                 </div>
