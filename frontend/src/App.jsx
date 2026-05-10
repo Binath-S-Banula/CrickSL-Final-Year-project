@@ -10,6 +10,7 @@ import DLSCalculator from "./pages/DLSCalculator";
 import AdminPanel from "./pages/AdminPanel";
 import PlayerDashboard from "./pages/PlayerDashboard";
 import Reports from "./pages/Reports";
+import Settings from "./pages/Settings";
 
 export default function App() {
   return (
@@ -29,6 +30,7 @@ export default function App() {
                   <Route path="/dls" element={<DLSCalculator />} />
                   <Route path="/reports" element={<Reports />} />
                   <Route path="/admin" element={<AdminPanel />} />
+                  <Route path="/settings" element={<Settings />} />
                   <Route path="/players" element={<PlayerDashboard />} />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
