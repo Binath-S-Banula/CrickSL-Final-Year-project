@@ -4,7 +4,16 @@ const BASE = "http://localhost:8000";
 const api = axios.create({ baseURL: BASE });
 
 // ─── Venues ────────────────────────────────────────────────────────
-export const getVenues = () => api.get("/admin-data/venues?country=Sri Lanka");
+
+export const getVenues = () =>
+  api.get("/admin-data/venues?country=Sri Lanka").then((res) => ({
+    ...res,
+    data: res.data.map((v) => ({
+      ...v,
+      id: v.venue_id,
+      name: v.display_name,
+    })),
+  }));
 export const getVenueStats = (id, opponent) =>
   api.get(`/venues/${id}/stats`, {
     params: opponent ? { opponent_team: opponent } : {},
