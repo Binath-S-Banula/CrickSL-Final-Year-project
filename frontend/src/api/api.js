@@ -4,7 +4,7 @@ const BASE = "http://localhost:8000";
 const api = axios.create({ baseURL: BASE });
 
 // ─── Venues ────────────────────────────────────────────────────────
-export const getVenues = () => api.get("/venues/?sl_only=true");
+export const getVenues = () => api.get("/admin-data/venues?country=Sri Lanka");
 export const getVenueStats = (id, opponent) =>
   api.get(`/venues/${id}/stats`, {
     params: opponent ? { opponent_team: opponent } : {},
