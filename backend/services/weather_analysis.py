@@ -6,18 +6,15 @@ Covers dew risk, rain probability, cloud cover and
 their combined impact on Sri Lanka specifically.
 
 Open-Meteo API used — completely free, no API key needed.
+Venue coordinates fetched from venue_display table (admin-managed).
 """
 
 import httpx
 from sqlalchemy.orm import Session
-from models.db_models import Match, Venue, Innings
+from sqlalchemy import text
+from models.db_models import Match, Venue
 from typing import Optional
 from datetime import date
-
-try:
-    from data.venue_coordinates import get_venue_coordinates
-except ImportError:
-    from venue_coordinates import get_venue_coordinates
 
 # ── THRESHOLDS ────────────────────────────────────────────────────────
 
@@ -104,6 +101,22 @@ def get_venue_historical_dew_pattern(db: Session, venue_id: int) -> dict:
     }
 
 
+# ── VENUE COORDINATES ─────────────────────────────────────────────────
+
+def get_coords_from_db(db: Session, venue_id: int) -> Optional[dict]:
+    """Fetch lat/lng from venue_display table (admin-managed)."""
+    try:
+        row = db.execute(text(
+            "SELECT latitude, longitude FROM venue_display "
+            "WHERE venue_id = :vid AND latitude IS NOT NULL LIMIT 1"
+        ), {"vid": venue_id}).fetchone()
+        if row and row[0] and row[1]:
+            return {"lat": float(row[0]), "lon": float(row[1])}
+    except Exception as e:
+        print(f"Coords lookup error: {e}")
+    return None
+
+
 # ── WEATHER API ───────────────────────────────────────────────────────
 
 async def fetch_weather_forecast(lat: float, lon: float, match_date: str) -> Optional[dict]:
@@ -122,13 +135,12 @@ async def fetch_weather_forecast(lat: float, lon: float, match_date: str) -> Opt
             if r.status_code == 200:
                 data = r.json()
                 hourly = data.get("hourly", {})
-                hum = hourly.get("relative_humidity_2m", [])
-                temp = hourly.get("temperature_2m", [])
-                dew = hourly.get("dewpoint_2m", [])
-                rain = hourly.get("precipitation_probability", [])
+                hum   = hourly.get("relative_humidity_2m", [])
+                temp  = hourly.get("temperature_2m", [])
+                dew   = hourly.get("dewpoint_2m", [])
+                rain  = hourly.get("precipitation_probability", [])
                 cloud = hourly.get("cloudcover", [])
 
-                # Evening averages (18:00 - 21:00 = indices 18-21)
                 def eve_avg(lst):
                     vals = [lst[i] for i in range(18, min(22, len(lst))) if lst[i] is not None]
                     return round(sum(vals) / len(vals), 1) if vals else None
@@ -167,8 +179,8 @@ async def calculate_weather_conditions(
     # Historical dew patterns
     historical = get_venue_historical_dew_pattern(db, venue.id)
 
-    # Venue coordinates
-    coords = get_venue_coordinates(venue_name)
+    # Venue coordinates — from venue_display table (admin-managed, accurate GPS)
+    coords = get_coords_from_db(db, venue.id)
 
     # Weather forecast
     weather = None
@@ -177,34 +189,30 @@ async def calculate_weather_conditions(
 
     # Get weather values
     if weather and weather.get("humidity"):
-        humidity = weather["humidity"]
-        rain_prob = weather.get("rain_probability", 20)
-        cloud_cover = weather.get("cloud_cover", 40)
+        humidity      = weather["humidity"]
+        rain_prob     = weather.get("rain_probability", 20)
+        cloud_cover   = weather.get("cloud_cover", 40)
         weather_source = "Live forecast (Open-Meteo API)"
     else:
-        month = match_month or (date.today().month)
-        humidity = SL_MONTHLY_HUMIDITY.get(month, 78)
-        rain_prob = 25
-        cloud_cover = 50
+        month         = match_month or date.today().month
+        humidity      = SL_MONTHLY_HUMIDITY.get(month, 78)
+        rain_prob     = 25
+        cloud_cover   = 50
         weather_source = "Historical average (API unavailable)"
 
     # ── Risk Scores ────────────────────────────────────────────────
-    dew_score = humidity_to_dew_score(humidity) * 0.6 + historical["dew_influence_factor"] * 0.4
-    rain_score = rain_prob_to_score(rain_prob)
+    dew_score   = humidity_to_dew_score(humidity) * 0.6 + historical["dew_influence_factor"] * 0.4
+    rain_score  = rain_prob_to_score(rain_prob)
     swing_score = cloud_to_swing_score(cloud_cover)
 
-    dew_score = round(dew_score, 3)
-    rain_score = round(rain_score, 3)
+    dew_score   = round(dew_score, 3)
+    rain_score  = round(rain_score, 3)
     swing_score = round(swing_score, 3)
 
     # ── Sri Lanka Specific Impact ──────────────────────────────────
-    # Dew: always helps chasing team
-    # Rain: hurts batting team (difficult conditions)
-    # Swing: helps bowling team
-
-    sl_impacts = []
-    recommendations = []
-    toss_factors = []
+    sl_impacts       = []
+    recommendations  = []
+    toss_factors     = []
 
     # DEW IMPACT
     if dew_score >= 0.65:
@@ -223,8 +231,7 @@ async def calculate_weather_conditions(
     # RAIN IMPACT
     if rain_score >= 0.6:
         sl_impacts.append("🌧️ HIGH RAIN RISK — Match may be interrupted. "
-                          "Conditions will be difficult for batting team when resumed. "
-                          "Bowling team benefits from movement after rain")
+                          "Conditions will be difficult for batting team when resumed.")
         if sl_batting_first:
             sl_impacts.append("⚠️ If SL bats first and rain interrupts — DLS target may disadvantage SL")
             recommendations.append("Consider DLS impact if batting first in rain-affected match")
@@ -245,59 +252,57 @@ async def calculate_weather_conditions(
                               "Good opportunity to take early wickets")
 
     # ── Toss Recommendation ────────────────────────────────────────
-    # Weight factors
-    dew_weight = dew_score * 1.5      # Dew most impactful in T20
-    rain_weight = rain_score * 1.0
+    dew_weight   = dew_score * 1.5
+    rain_weight  = rain_score * 1.0
     swing_weight = swing_score * 0.8
 
-    # Score for fielding first (positive = field first is better)
     field_first_score = dew_weight - swing_weight + (rain_weight * 0.3)
 
     if field_first_score > 0.5:
-        toss_recommendation = "FIELD FIRST — Dew heavily favors chasing team"
+        toss_recommendation   = "FIELD FIRST — Dew heavily favors chasing team"
         recommendation_strength = "STRONG"
     elif field_first_score > 0.2:
-        toss_recommendation = "LEAN FIELD FIRST — Conditions slightly favor chasing"
+        toss_recommendation   = "LEAN FIELD FIRST — Conditions slightly favor chasing"
         recommendation_strength = "MODERATE"
     elif field_first_score < -0.3:
-        toss_recommendation = "BAT FIRST — Swing conditions favor early bowling. Bat while pitch is good"
+        toss_recommendation   = "BAT FIRST — Swing conditions favor early bowling. Bat while pitch is good"
         recommendation_strength = "MODERATE"
     else:
-        toss_recommendation = "BALANCED — No strong weather-based toss advantage"
+        toss_recommendation   = "BALANCED — No strong weather-based toss advantage"
         recommendation_strength = "WEAK"
 
     return {
-        "venue_name": venue_name,
-        "match_date": match_date,
+        "venue_name":       venue_name,
+        "match_date":       match_date,
         "sl_batting_first": sl_batting_first,
-        "weather_source": weather_source,
+        "weather_source":   weather_source,
 
         "conditions": {
-            "humidity_pct": round(humidity, 1),
+            "humidity_pct":        round(humidity, 1),
             "rain_probability_pct": round(rain_prob, 1),
-            "cloud_cover_pct": round(cloud_cover, 1),
-            "temperature": weather.get("temperature") if weather else None,
-            "dewpoint": weather.get("dewpoint") if weather else None,
+            "cloud_cover_pct":     round(cloud_cover, 1),
+            "temperature":         weather.get("temperature") if weather else None,
+            "dewpoint":            weather.get("dewpoint") if weather else None,
         },
 
         "risk_scores": {
-            "dew_risk": dew_score,
-            "dew_risk_label": risk_label(dew_score),
-            "rain_risk": rain_score,
+            "dew_risk":        dew_score,
+            "dew_risk_label":  risk_label(dew_score),
+            "rain_risk":       rain_score,
             "rain_risk_label": risk_label(rain_score),
             "swing_conditions": swing_score,
-            "swing_label": risk_label(swing_score),
+            "swing_label":     risk_label(swing_score),
         },
 
         "historical_venue_data": {
-            "total_matches": historical["total_matches"],
-            "chase_win_pct": historical["overall_chase_win_pct"],
-            "toss_field_win_pct": historical["toss_field_win_pct"],
+            "total_matches":        historical["total_matches"],
+            "chase_win_pct":        historical["overall_chase_win_pct"],
+            "toss_field_win_pct":   historical["toss_field_win_pct"],
             "dew_influence_factor": historical["dew_influence_factor"],
         },
 
-        "sl_impact_analysis": sl_impacts,
-        "toss_recommendation": toss_recommendation,
-        "recommendation_strength": recommendation_strength,
-        "toss_factors": toss_factors,
+        "sl_impact_analysis":       sl_impacts,
+        "toss_recommendation":      toss_recommendation,
+        "recommendation_strength":  recommendation_strength,
+        "toss_factors":             toss_factors,
     }
