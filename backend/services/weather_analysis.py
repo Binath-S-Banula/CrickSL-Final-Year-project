@@ -173,8 +173,14 @@ async def calculate_weather_conditions(
     and their combined impact on Sri Lanka specifically.
     """
     venue = db.query(Venue).filter(Venue.name == venue_name).first()
-    if not venue:
-        return {"error": f"Venue '{venue_name}' not found"}
+if not venue:
+    row = db.execute(text(
+        "SELECT venue_id FROM venue_display WHERE display_name = :dn LIMIT 1"
+    ), {"dn": venue_name}).fetchone()
+    if row:
+        venue = db.query(Venue).filter(Venue.id == row[0]).first()
+if not venue:
+    return {"error": f"Venue '{venue_name}' not found"}
 
     # Historical dew patterns
     historical = get_venue_historical_dew_pattern(db, venue.id)
