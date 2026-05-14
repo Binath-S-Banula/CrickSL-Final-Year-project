@@ -149,15 +149,10 @@ export default function ChatBot() {
     setLoading(true)
 
     try {
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
+      const response = await fetch('http://localhost:8000/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 1000,
-          system: SYSTEM_PROMPT,
-          messages: newMessages,
-        }),
+        body: JSON.stringify({ messages: newMessages }),
       })
       const data = await response.json()
       const reply = data.content?.[0]?.text || 'Sorry, I could not get a response. Please try again.'
