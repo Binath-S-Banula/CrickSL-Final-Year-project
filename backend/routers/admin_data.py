@@ -185,5 +185,5 @@ def get_dataset_info(db: Session = Depends(get_db)):
             "total_venues":     int(venues_count[0] or 0),
             "sl_matches":       int(sl_matches[0] or 0),
         }
-    except Exception as e:
-        return {"error": str(e)}
+    except Exception:
+        return {"error": "Failed to fetch dataset info."}
