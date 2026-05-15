@@ -7,20 +7,13 @@ export default function Home() {
     <div style={{ minHeight: 'calc(100vh - 64px)', display: 'flex', flexDirection: 'column' }}>
       {/* Hero */}
       <div style={{
-        background: 'linear-gradient(135deg, #0a0e1a 0%, #0f1f3d 50%, #0a0e1a 100%)',
+        background: 'var(--bg-secondary)',
         borderBottom: '1px solid var(--border)',
         padding: '5rem 2rem',
         textAlign: 'center',
         position: 'relative',
         overflow: 'hidden',
       }}>
-        {/* Background decoration */}
-        <div style={{
-          position: 'absolute', inset: 0,
-          backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(30,64,175,0.15) 0%, transparent 50%), radial-gradient(circle at 80% 50%, rgba(245,158,11,0.08) 0%, transparent 50%)',
-          pointerEvents: 'none',
-        }} />
-
         <div style={{ position: 'relative' }}>
           <div style={{ fontSize: '3.5rem', marginBottom: '1rem' }}>🏏</div>
           <h1 style={{
@@ -28,20 +21,20 @@ export default function Home() {
             fontSize: '3.5rem',
             fontWeight: 800,
             marginBottom: '0.5rem',
-            color: '#f1f5f9',
+            color: 'var(--text-primary)',
           }}>
             Crick<span style={{ color: '#f59e0b' }}>SL</span>
           </h1>
           <p style={{
             fontSize: '1.15rem',
-            color: '#94a3b8',
+            color: 'var(--text-secondary)',
             marginBottom: '0.75rem',
             maxWidth: '600px',
             margin: '0 auto 0.75rem',
           }}>
             T20 Cricket Analytics & Decision Support System for Sri Lanka
           </p>
-          <p style={{ fontSize: '0.85rem', color: '#64748b', marginBottom: '2.5rem' }}>
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '2.5rem' }}>
             Powered by 4,991 matches · 1.1M deliveries · Random Forest ML
           </p>
 
@@ -63,7 +56,7 @@ export default function Home() {
         <h2 style={{
           fontFamily: 'Rajdhani, sans-serif',
           fontSize: '1.5rem',
-          color: '#94a3b8',
+          color: 'var(--text-secondary)',
           textAlign: 'center',
           marginBottom: '3rem',
           textTransform: 'uppercase',
@@ -75,10 +68,10 @@ export default function Home() {
           <div className="card" style={{ cursor: 'pointer', borderColor: 'rgba(59,130,246,0.3)' }}
             onClick={() => navigate('/venue-weather')}>
             <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>🏟️</div>
-            <h3 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '1.3rem', marginBottom: '0.75rem', color: '#f1f5f9' }}>
+            <h3 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '1.3rem', marginBottom: '0.75rem', color: 'var(--text-primary)' }}>
               Venue & Weather Analysis
             </h3>
-            <p style={{ color: '#94a3b8', fontSize: '0.9rem', lineHeight: 1.7 }}>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.7 }}>
               Opponent-adjusted par scores, phase-by-phase scoring patterns,
               dew risk, rain probability, swing conditions and toss recommendations.
             </p>
@@ -93,10 +86,10 @@ export default function Home() {
           <div className="card" style={{ cursor: 'pointer', borderColor: 'rgba(245,158,11,0.3)' }}
             onClick={() => navigate('/playing-xi')}>
             <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>👥</div>
-            <h3 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '1.3rem', marginBottom: '0.75rem', color: '#f1f5f9' }}>
+            <h3 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '1.3rem', marginBottom: '0.75rem', color: 'var(--text-primary)' }}>
               Playing XI Recommendation
             </h3>
-            <p style={{ color: '#94a3b8', fontSize: '0.9rem', lineHeight: 1.7 }}>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.7 }}>
               MCDA-based player ranking using venue performance, recent form and
               opponent matchup analysis. Active players only — two-layer filter.
             </p>
@@ -111,10 +104,10 @@ export default function Home() {
           <div className="card" style={{ cursor: 'pointer', borderColor: 'rgba(16,185,129,0.3)' }}
             onClick={() => navigate('/dls')}>
             <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>🌧️</div>
-            <h3 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '1.3rem', marginBottom: '0.75rem', color: '#f1f5f9' }}>
+            <h3 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: '1.3rem', marginBottom: '0.75rem', color: 'var(--text-primary)' }}>
               DLS Rain Calculator
             </h3>
-            <p style={{ color: '#94a3b8', fontSize: '0.9rem', lineHeight: 1.7 }}>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.7 }}>
               Pre-match DLS analysis using ICC Standard Edition resource table.
               5-over milestone breakdown with required run rates and strategy.
             </p>
