@@ -29,8 +29,11 @@ def get_player_list(
         df = date_clause(cutoff)
 
         role_lower = role.lower().strip()
-        safe_role = role_lower.replace("'", "''")
-        role_filter = "" if role_lower == "all" else f"AND LOWER(p.player_role) LIKE '%{safe_role}%'"
+        role_filter = ""
+        params = {}
+        if role_lower != "all":
+            role_filter = "AND LOWER(p.player_role) LIKE :role_pattern"
+            params["role_pattern"] = f"%{role_lower}%"
 
         query = (
             "SELECT p.name, p.player_role, p.batting_style, p.bowling_style, MAX(m.date) AS last_date "
@@ -47,7 +50,7 @@ def get_player_list(
             "LIMIT 100"
         )
 
-        rows = db.execute(text(query)).fetchall()
+        rows = db.execute(text(query), params).fetchall()
         players = []
         for row in rows:
             last_date = row[4]
@@ -358,9 +361,9 @@ def get_player_stats(
             "recent_form": recent_form,
         }
 
-    except Exception as e:
+    except Exception:
         return {
-            "name": name, "error": str(e),
+            "name": name, "error": "Failed to load player stats.",
             "batting_overview": {}, "bowling_overview": {},
             "dismissals": {}, "wicket_types": {},
             "score_distribution": {}, "phase_batting": {},
