@@ -70,7 +70,9 @@ export default function DLSCalculator() {
             <label className="form-label">Venue</label>
             <select className="form-control" value={venueName} onChange={e => setVenueName(e.target.value)}>
               <option value="">Select venue...</option>
-              {venues.map(v => <option key={v.id} value={v.name}>{v.name}</option>)}
+              {venues.map(v => (
+                <option key={v.id} value={v.raw_name}>{v.name}</option>
+              ))}
             </select>
           </div>
           <div className="form-group" style={{ marginBottom: 0 }}>
