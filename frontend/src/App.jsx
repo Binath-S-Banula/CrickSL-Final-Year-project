@@ -3,6 +3,7 @@ import { AuthProvider } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
 import Login from "./pages/Login";
 import Home from "./pages/Home";
 import VenueWeather from "./pages/VenueWeather";
@@ -38,6 +39,7 @@ export default function App() {
                     <Route path="/players" element={<PlayerDashboard />} />
                     <Route path="*" element={<Navigate to="/" replace />} />
                   </Routes>
+                  <Footer />
                 </ProtectedRoute>
               }
             />
