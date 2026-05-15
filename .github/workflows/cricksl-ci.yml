@@ -1,0 +1,178 @@
+name: CrickSL CI Pipeline
+
+on:
+  push:
+    branches: [ development, main ]
+  pull_request:
+    branches: [ development, main ]
+
+jobs:
+
+  # ── Backend Checks ─────────────────────────────────────────────────
+  backend:
+    name: Backend — Python Checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        working-directory: backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 pyflakes
+          pip install fastapi uvicorn sqlalchemy pydantic python-jose passlib bcrypt python-multipart httpx python-dotenv
+
+      - name: Lint — Check Python syntax errors
+        working-directory: backend
+        run: |
+          # Stop if there are syntax errors or undefined names
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics \
+            --exclude=venv,__pycache__,.env
+
+      - name: Lint — Check code style warnings
+        working-directory: backend
+        run: |
+          # Show style warnings but don't fail the build
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=120 \
+            --statistics --exclude=venv,__pycache__,.env
+        continue-on-error: true
+
+      - name: Verify — All routers importable
+        working-directory: backend
+        run: |
+          python -c "
+          import sys
+          sys.path.insert(0, '.')
+
+          # Check all router files have valid syntax
+          import ast, os
+          router_dir = 'routers'
+          errors = []
+          for f in os.listdir(router_dir):
+            if f.endswith('.py') and not f.startswith('__'):
+              path = os.path.join(router_dir, f)
+              try:
+                with open(path) as fh:
+                  ast.parse(fh.read())
+                print(f'  ✅ {f}')
+              except SyntaxError as e:
+                errors.append(f'{f}: {e}')
+                print(f'  ❌ {f}: {e}')
+          if errors:
+            sys.exit(1)
+          print('All routers passed syntax check.')
+          "
+
+      - name: Verify — Models syntax check
+        working-directory: backend
+        run: |
+          python -c "
+          import ast, os, sys
+          errors = []
+          for root, dirs, files in os.walk('models'):
+            dirs[:] = [d for d in dirs if d not in ['venv', '__pycache__']]
+            for f in files:
+              if f.endswith('.py') and not f.startswith('__'):
+                path = os.path.join(root, f)
+                try:
+                  with open(path) as fh:
+                    ast.parse(fh.read())
+                  print(f'  ✅ {path}')
+                except SyntaxError as e:
+                  errors.append(f'{path}: {e}')
+                  print(f'  ❌ {path}: {e}')
+          if errors:
+            sys.exit(1)
+          print('All models passed syntax check.')
+          "
+
+      - name: Verify — Services syntax check
+        working-directory: backend
+        run: |
+          python -c "
+          import ast, os, sys
+          errors = []
+          for root, dirs, files in os.walk('services'):
+            dirs[:] = [d for d in dirs if d not in ['venv', '__pycache__']]
+            for f in files:
+              if f.endswith('.py') and not f.startswith('__'):
+                path = os.path.join(root, f)
+                try:
+                  with open(path) as fh:
+                    ast.parse(fh.read())
+                  print(f'  ✅ {path}')
+                except SyntaxError as e:
+                  errors.append(f'{path}: {e}')
+                  print(f'  ❌ {path}: {e}')
+          if errors:
+            sys.exit(1)
+          print('All services passed syntax check.')
+          "
+
+  # ── Frontend Checks ────────────────────────────────────────────────
+  frontend:
+    name: Frontend — React Build Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Build — React production build
+        working-directory: frontend
+        run: npm run build
+        env:
+          CI: false
+
+      - name: Verify — Build output exists
+        working-directory: frontend
+        run: |
+          if [ -d "dist" ]; then
+            echo "✅ Build successful — dist/ folder created"
+            echo "Files in dist/:"
+            ls -la dist/
+          else
+            echo "❌ Build failed — dist/ folder not found"
+            exit 1
+          fi
+
+  # ── Summary ────────────────────────────────────────────────────────
+  summary:
+    name: Pipeline Summary
+    runs-on: ubuntu-latest
+    needs: [backend, frontend]
+    if: always()
+
+    steps:
+      - name: Report Results
+        run: |
+          echo "=========================================="
+          echo "  CrickSL CI Pipeline — Results"
+          echo "=========================================="
+          echo "  Backend checks : ${{ needs.backend.result }}"
+          echo "  Frontend build : ${{ needs.frontend.result }}"
+          echo "=========================================="
+          if [ "${{ needs.backend.result }}" == "success" ] && [ "${{ needs.frontend.result }}" == "success" ]; then
+            echo "  ✅ ALL CHECKS PASSED"
+          else
+            echo "  ❌ SOME CHECKS FAILED — review above"
+            exit 1
+          fi
