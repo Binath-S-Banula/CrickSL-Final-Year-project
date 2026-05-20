@@ -17,15 +17,6 @@ const SYSTEM_STATS = [
   { label: "Accuracy", value: "72.7%" },
 ];
 
-const TECH = [
-  "FastAPI",
-  "PostgreSQL",
-  "React",
-  "scikit-learn",
-  "JWT Auth",
-  "CI/CD",
-];
-
 export default function Footer() {
   const navigate = useNavigate();
 
