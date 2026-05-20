@@ -2,7 +2,7 @@
 ml_model.py
 ───────────
 Upgraded ML model for CrickSL v2.0.
-Now includes dew risk as a prediction feature.
+
 
 Features used:
   1. venue_bat_first_win_pct    — historical win rate batting first at venue
@@ -11,9 +11,9 @@ Features used:
   4. sl_batting_first           — is Sri Lanka batting first? (1/0)
   5. sl_recent_form             — win rate in last 10 SL matches
   6. opponent_recent_form       — win rate in last 10 opponent matches
-  7. dew_influence_factor       — venue historical dew influence (0-1) [NEW]
-  8. sl_batting_first_x_dew     — interaction: SL bats first AND high dew [NEW]
-  9. head_to_head_sl_win_pct    — SL win rate vs this specific opponent [NEW]
+  7. dew_influence_factor       — venue historical dew influence (0-1)
+  8. sl_batting_first_x_dew     — interaction: SL bats first AND high dew
+  9. head_to_head_sl_win_pct    — SL win rate vs this specific opponent
 """
 
 import os
@@ -138,10 +138,10 @@ def _build_features(db: Session, match: Match, for_team: str = "Sri Lanka") -> l
         sl_batting_first,        # Feature 4
         sl_form,                 # Feature 5
         opp_form,                # Feature 6
-        dew_factor,              # Feature 7 — NEW
-        sl_batting_first_x_dew,  # Feature 8 — NEW (interaction)
-        sl_chasing_x_dew,        # Feature 9 — NEW (interaction)
-        h2h,                     # Feature 10 — NEW
+        dew_factor,              # Feature 7
+        sl_batting_first_x_dew,  # Feature 8
+        sl_chasing_x_dew,        # Feature 9
+        h2h,                     # Feature 10
     ]
 
 
@@ -153,7 +153,7 @@ def train_model(db: Session):
     from sklearn.preprocessing import StandardScaler
     from sklearn.metrics import classification_report
 
-    print("🤖 Training upgraded win probability model (v2.0)...")
+    print(" Training upgraded win probability model (v2.0)...")
     print("   New features: dew factor, head-to-head record, interaction terms")
 
     sl_matches = db.query(Match).filter(
@@ -231,6 +231,7 @@ def train_model(db: Session):
         print(f"   {name}: accuracy={acc:.3f}, CV={cv_scores.mean():.3f}±{cv_scores.std():.3f}")
 
     # Select best model by test accuracy
+
     best_name = max(results, key=lambda k: results[k]["accuracy"])
     best = results[best_name]
     print(f"\n   ✅ Best model: {best_name} (accuracy: {best['accuracy']:.3f})")
