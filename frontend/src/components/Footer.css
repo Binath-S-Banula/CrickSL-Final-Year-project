@@ -1,11 +1,11 @@
 /* ── Footer ─────────────────────────────────────────────────────────── */
 
 .footer {
-  background: #0f1f3d;
+  background: #0a0f1e;
   border-top: 2px solid #1e40af;
   padding: 3rem 2rem 1.5rem;
   margin-top: auto;
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
 }
 
 .footer-inner {
@@ -25,7 +25,7 @@
 /* ── Brand Column ─────────────────────────────────────────────────── */
 
 .footer-brand-logo {
-  font-family: 'Rajdhani', sans-serif;
+  font-family: "Rajdhani", sans-serif;
   font-size: 1.7rem;
   font-weight: 700;
   color: #ffffff;
@@ -71,7 +71,8 @@
 
 /* ── Column headers ─────────────────────────────────────────────── */
 
-.footer-col {}
+.footer-col {
+}
 
 .footer-col-title {
   font-size: 0.75rem;
@@ -147,7 +148,7 @@
   font-size: 0.82rem;
   font-weight: 700;
   color: #ffffff;
-  font-family: 'Rajdhani', sans-serif;
+  font-family: "Rajdhani", sans-serif;
 }
 
 /* ── Stay Connected ──────────────────────────────────────────────── */
@@ -171,18 +172,18 @@
   gap: 0.55rem;
   padding: 0.6rem 0.85rem;
   border-radius: 10px;
-  background: var(--social-bg, rgba(255,255,255,0.08));
-  border: 1px solid rgba(255,255,255,0.1);
+  background: var(--social-bg, rgba(255, 255, 255, 0.08));
+  border: 1px solid rgba(255, 255, 255, 0.1);
   text-decoration: none;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .footer-social-btn:hover {
-  background: var(--social-bg, rgba(255,255,255,0.15));
+  background: var(--social-bg, rgba(255, 255, 255, 0.15));
   border-color: var(--social-color, #f59e0b);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .footer-social-label {
@@ -245,8 +246,13 @@
 }
 
 @keyframes pulse-dot {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.35; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
 }
 
 /* ── Responsive ──────────────────────────────────────────────────── */
