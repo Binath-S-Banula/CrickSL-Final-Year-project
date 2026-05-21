@@ -45,7 +45,6 @@ function generateStrategies(prediction, report, tossDecision, tossWinner, team2)
   const goodH2H   = factors.includes('strong head-to-head record')
   const opponentToss = tossWinner !== 'Sri Lanka'
 
-  // Card 1 — Probability headline
   if (slProb < 35) {
     cards.push({ type: 'critical', icon: '🚨', title: 'Underdog Position — Aggressive Strategy Required',
       bullets: [
@@ -88,7 +87,6 @@ function generateStrategies(prediction, report, tossDecision, tossWinner, team2)
     })
   }
 
-  // Card 2 — Dew risk
   if (dewHigh && slBattingFirst) {
     cards.push({ type: 'critical', icon: '💧', title: 'High Dew Alert — Batting First Disadvantage',
       bullets: [
@@ -120,7 +118,6 @@ function generateStrategies(prediction, report, tossDecision, tossWinner, team2)
     })
   }
 
-  // Card 3 — Venue strategy
   if (slBattingFirst && chasePct > 55) {
     cards.push({ type: 'warning', icon: '🏟️', title: `Venue Favours Chasing (${Math.round(chasePct)}% chase wins) — Bat With Intent`,
       bullets: [
@@ -153,7 +150,6 @@ function generateStrategies(prediction, report, tossDecision, tossWinner, team2)
     })
   }
 
-  // Card 4 — Form
   if (poorForm) {
     cards.push({ type: 'warning', icon: '📈', title: 'Opponent in Better Form — Break Their Momentum Early',
       bullets: [
@@ -176,7 +172,6 @@ function generateStrategies(prediction, report, tossDecision, tossWinner, team2)
     })
   }
 
-  // Card 5 — H2H
   if (poorH2H) {
     cards.push({ type: 'critical', icon: '⚔️', title: `Poor H2H Record vs ${team2} — Specific Preparation Required`,
       bullets: [
@@ -199,7 +194,6 @@ function generateStrategies(prediction, report, tossDecision, tossWinner, team2)
     })
   }
 
-  // Card 6 — Toss
   if (opponentToss) {
     cards.push({ type: 'warning', icon: '🪙', title: 'Opponent Controlled Toss — Adapt to Conditions Quickly',
       bullets: [
@@ -214,7 +208,6 @@ function generateStrategies(prediction, report, tossDecision, tossWinner, team2)
     })
   }
 
-  // Card 7 — Mental (always shown)
   cards.push({ type: 'mental', icon: '🧠', title: 'Mental Strength — The Invisible X Factor',
     bullets: [
       'Breathe between deliveries — a 3-second reset prevents panic decisions in high-pressure moments',
@@ -312,14 +305,6 @@ export default function Reports() {
     ? generateStrategies(prediction, report, tossDecision, tossWinner, team2)
     : []
 
-  const SC = {
-    critical: { bg: 'rgba(239,68,68,0.08)',  border: 'rgba(239,68,68,0.25)',  accent: '#ef4444' },
-    warning:  { bg: 'rgba(245,158,11,0.08)', border: 'rgba(245,158,11,0.25)', accent: '#f59e0b' },
-    positive: { bg: 'rgba(16,185,129,0.08)', border: 'rgba(16,185,129,0.25)', accent: '#10b981' },
-    neutral:  { bg: 'rgba(99,102,241,0.08)', border: 'rgba(99,102,241,0.25)', accent: '#818cf8' },
-    mental:   { bg: 'rgba(168,85,247,0.08)', border: 'rgba(168,85,247,0.25)', accent: '#c084fc' },
-  }
-
   return (
     <>
       <style>{`
@@ -352,7 +337,7 @@ export default function Reports() {
             )}
           </div>
 
-          {/* ── Config (ORIGINAL — untouched) ── */}
+          {/* ── Config ── */}
           <div style={s.configCard} className="no-print">
             <h2 style={s.cardTitle}>Match Configuration</h2>
             <div style={s.configGrid}>
@@ -398,7 +383,7 @@ export default function Reports() {
                 <p>{venue} | Sri Lanka vs {team2} | {new Date().toLocaleDateString()}</p>
               </div>
 
-              {/* ── Summary Cards (ORIGINAL — untouched) ── */}
+              {/* ── Summary Cards ── */}
               <div style={s.summaryGrid}>
                 <SummaryCard icon="🏟️" label="Venue"
                   value={report.venue_name || venue} sub="Match location" />
@@ -427,12 +412,9 @@ export default function Reports() {
                 </div>
               )}
 
-              {/* ══════════════════════════════════════════
-                  NEW: ML WIN PROBABILITY SECTION
-              ══════════════════════════════════════════ */}
+              {/* ── ML WIN PROBABILITY SECTION ── */}
               {showPredConfig && (
                 <div style={s.mlSection} className="no-print">
-                  {/* ML header */}
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
                     <div>
                       <h2 style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: '1.3rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.25rem' }}>
@@ -530,14 +512,14 @@ export default function Reports() {
                       </div>
 
                       {/* Key factors */}
-                      <div style={{ marginBottom: '1.25rem' }}>
+                      <div style={{ marginBottom: '0.5rem' }}>
                         <h4 style={{ fontSize: '0.92rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.3rem' }}>
                           📋 Key Prediction Factors
                         </h4>
                         <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.85rem' }}>
                           The 10 features the Random Forest model weighted to produce this prediction
                         </p>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '0.5rem', marginBottom: '1.25rem' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '0.5rem' }}>
                           {(prediction.key_factors || []).map((factor, i) => (
                             <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.6rem', background: 'rgba(255,255,255,0.03)', borderRadius: '8px', padding: '0.6rem 0.85rem', border: '1px solid rgba(255,255,255,0.05)' }}>
                               <span style={{ fontSize: '0.95rem', flexShrink: 0 }}>
@@ -548,23 +530,6 @@ export default function Reports() {
                           ))}
                         </div>
                       </div>
-
-                      {/* Model info */}
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '0.75rem', borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
-                        {[
-                          ['Algorithm', 'Random Forest (scikit-learn)', false],
-                          ['Training Data', '4,991 T20I · Cricsheet', false],
-                          ['Test Accuracy', '72.7%', true],
-                          ['Features', '10 (venue, form, toss, dew, H2H)', false],
-                          ['Validation', '80/20 split · 5-fold CV', false],
-                          ['Model File', 'backend/ml/win_model.pkl', false],
-                        ].map(([label, value, gold]) => (
-                          <div key={label} style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
-                            <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{label}</span>
-                            <span style={{ fontSize: '0.82rem', color: gold ? '#f59e0b' : 'var(--text-secondary)', fontWeight: gold ? 700 : 500 }}>{value}</span>
-                          </div>
-                        ))}
-                      </div>
                     </div>
                   )}
 
@@ -574,7 +539,7 @@ export default function Reports() {
                 </div>
               )}
 
-              {/* ── Charts Row 1 (ORIGINAL — untouched) ── */}
+              {/* ── Charts Row 1 ── */}
               <div style={s.chartsRow}>
                 <div style={s.chartCard}>
                   <h3 style={s.chartTitle}>Phase-wise Scoring Analysis</h3>
@@ -612,7 +577,7 @@ export default function Reports() {
                 </div>
               </div>
 
-              {/* ── Charts Row 2 (ORIGINAL — untouched) ── */}
+              {/* ── Charts Row 2 ── */}
               <div style={s.chartsRow}>
                 <div style={s.chartCard}>
                   <h3 style={s.chartTitle}>Current Squad — Top Batters at Venue</h3>
@@ -656,13 +621,13 @@ export default function Reports() {
                 </div>
               </div>
 
-              {/* ── Player Tables (ORIGINAL — untouched) ── */}
+              {/* ── Player Tables ── */}
               <div style={s.chartsRow}>
                 <PlayerTable title="Current Squad — Batting Stats" players={activeBatters} type="batting" />
                 <PlayerTable title="Current Squad — Bowling Stats" players={activeBowlers} type="bowling" />
               </div>
 
-              {/* ── Compact Tactical Summary (bottom) ── */}
+              {/* ── Compact Tactical Summary ── */}
               {strategies.length > 0 && (
                 <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '1.5rem', marginBottom: '1.5rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem', borderBottom: '1px solid var(--border)', paddingBottom: '0.75rem' }}>
@@ -688,7 +653,6 @@ export default function Reports() {
                 </div>
               )}
 
-
               {/* ── Footer ── */}
               <div style={s.reportFooter}>
                 <p style={{ fontWeight: 600, marginBottom: '0.25rem' }}>
@@ -707,7 +671,7 @@ export default function Reports() {
   )
 }
 
-// ─── Sub-components (ORIGINAL — untouched) ───────────────────────
+// ─── Sub-components ───────────────────────────────────────────────
 function SummaryCard({ icon, label, value, sub, highlight }) {
   return (
     <div style={{ ...s.summaryCard, ...(highlight ? s.summaryHighlight : {}) }}>
@@ -775,7 +739,7 @@ function NoData() {
   )
 }
 
-// ─── Styles (ORIGINAL — untouched + new additions) ───────────────
+// ─── Styles ───────────────────────────────────────────────────────
 const s = {
   page:       { background: 'var(--bg-primary)', minHeight: '100vh', padding: '2rem 1.5rem' },
   container:  { maxWidth: '1280px', margin: '0 auto' },
@@ -802,7 +766,6 @@ const s = {
   reportFooter: { background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '1.25rem 1.5rem', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '0.85rem' },
   dataWarning: { display: 'flex', gap: '0.85rem', alignItems: 'flex-start', background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: '10px', padding: '1rem 1.25rem', marginBottom: '1.5rem' },
   warningIcon: { fontSize: '1.1rem', flexShrink: 0, marginTop: '0.1rem' },
-  // New additions only
   mlSection:  { background: 'linear-gradient(135deg,rgba(16,185,129,0.05),rgba(59,130,246,0.05))', border: '1px solid rgba(16,185,129,0.2)', borderRadius: '16px', padding: '1.75rem', marginBottom: '1.5rem' },
   predSelect: { background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text-primary)', padding: '0.55rem 0.85rem', fontSize: '0.88rem', cursor: 'pointer' },
   predBtn:    { background: 'linear-gradient(135deg,#10b981,#059669)', color: 'white', border: 'none', borderRadius: '8px', padding: '0.6rem 1.4rem', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' },
