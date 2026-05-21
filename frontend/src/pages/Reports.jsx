@@ -1365,7 +1365,6 @@ export default function Reports() {
                   {venue} | Sri Lanka vs {team2}
                 </p>
                 <p style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>
-                  Based on historical T20I data · ML: Random Forest 72.7% ·
                   Strategies generated from prediction factors · ©{" "}
                   {new Date().getFullYear()} CrickSL. All rights reserved.
                 </p>
