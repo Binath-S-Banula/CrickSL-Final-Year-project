@@ -17,7 +17,7 @@
 
 .footer-grid {
   display: grid;
-  grid-template-columns: 2.5fr 1fr 1fr 1fr;
+  grid-template-columns: 1.8fr 1fr 1.4fr 1.2fr;
   gap: 2.5rem;
   margin-bottom: 2.5rem;
 }
@@ -41,30 +41,37 @@
 
 .footer-brand-desc {
   color: var(--text-muted);
-  font-size: 0.85rem;
+  font-size: 0.84rem;
   line-height: 1.75;
-  max-width: 280px;
   margin-bottom: 1.25rem;
 }
 
-.footer-badges {
+/* ── Contact list ── */
+
+.footer-contact-list {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
+  flex-direction: column;
+  gap: 0.65rem;
 }
 
-.footer-tech-badge {
-  padding: 0.25rem 0.7rem;
-  background: transparent;
-  border: 1px solid var(--border-color);
-  border-radius: 20px;
-  font-size: 0.72rem;
+.footer-contact-item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-size: 0.83rem;
   color: var(--text-muted);
-  font-weight: 500;
-  letter-spacing: 0.02em;
 }
 
-/* ── Column Headers ──────────────────────────────────────────────────── */
+.footer-contact-icon {
+  font-size: 0.9rem;
+  flex-shrink: 0;
+  width: 22px;
+  text-align: center;
+}
+
+/* ── Generic column ── */
+
+.footer-col {}
 
 .footer-col-title {
   font-size: 0.75rem;
@@ -77,15 +84,21 @@
   border-bottom: 1px solid var(--border-color);
 }
 
-/* ── Links / Items ───────────────────────────────────────────────────── */
+/* ── Quick Links ── */
+
+.footer-arrow {
+  color: #f59e0b;
+  font-size: 0.75rem;
+  flex-shrink: 0;
+}
 
 .footer-link {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.5rem;
   color: var(--text-muted);
   font-size: 0.83rem;
-  margin-bottom: 0.55rem;
+  margin-bottom: 0.6rem;
   text-decoration: none;
   cursor: pointer;
   transition: color 0.15s;
@@ -100,17 +113,30 @@
   color: #f59e0b;
 }
 
-.footer-link-icon {
-  font-size: 0.75rem;
-  opacity: 0.6;
+.footer-link-external {
+  text-decoration: none;
+  color: var(--text-muted);
+}
+
+/* ── Project Info ── */
+
+.footer-info-section {}
+
+.footer-info-sub {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.6rem;
 }
 
 .footer-stat-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.5rem;
-  padding-bottom: 0.5rem;
+  margin-bottom: 0.45rem;
+  padding-bottom: 0.45rem;
   border-bottom: 1px solid var(--border-color);
 }
 
@@ -125,10 +151,52 @@
 }
 
 .footer-stat-value {
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   font-weight: 600;
   color: var(--text-secondary);
   font-family: 'Rajdhani', sans-serif;
+}
+
+/* ── Social Media ── */
+
+.footer-social-desc {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin-bottom: 1.1rem;
+}
+
+.footer-social-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+}
+
+.footer-social-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.footer-social-btn:hover {
+  background: rgba(255,255,255,0.09);
+  color: var(--social-color, #f59e0b);
+  border-color: var(--social-color, #f59e0b);
+  transform: translateY(-1px);
+}
+
+.footer-social-label {
+  font-size: 0.78rem;
+  font-weight: 500;
 }
 
 /* ── Divider ─────────────────────────────────────────────────────────── */
@@ -167,14 +235,6 @@
   gap: 1rem;
 }
 
-.footer-flag {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-  font-size: 0.78rem;
-  color: var(--text-muted);
-}
-
 .footer-status {
   display: flex;
   align-items: center;
@@ -194,12 +254,12 @@
 
 @keyframes pulse-dot {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
+  50%       { opacity: 0.4; }
 }
 
 /* ── Responsive ──────────────────────────────────────────────────────── */
 
-@media (max-width: 900px) {
+@media (max-width: 1100px) {
   .footer-grid {
     grid-template-columns: 1fr 1fr;
     gap: 2rem;
