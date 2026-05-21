@@ -48,111 +48,38 @@ const MODULES = [
   },
 ];
 
-const STATS = [
-  { value: "4,991", label: "T20 Matches" },
-  { value: "1.1M", label: "Ball-by-Ball Deliveries" },
-  { value: "72.7%", label: "ML Accuracy" },
-  { value: "329", label: "SL Matches Analysed" },
-];
-
 export default function Home() {
   const navigate = useNavigate();
 
   return (
-    <div
-      style={{
-        minHeight: "calc(100vh - 64px)",
-        display: "flex",
-        flexDirection: "column",
-        background: "var(--bg-primary)",
-      }}
-    >
+    <div style={{ minHeight: "calc(100vh - 64px)", display: "flex", flexDirection: "column", background: "var(--bg-primary)" }}>
+
       {/* ── Hero ─────────────────────────────────────────────── */}
-      <div
-        style={{
-          background: "var(--bg-secondary)",
-          borderBottom: "1px solid var(--border)",
-          padding: "5rem 2rem 4rem",
-          textAlign: "center",
-        }}
-      >
+      <div style={{ background: "var(--bg-secondary)", borderBottom: "1px solid var(--border)", padding: "5rem 2rem 4rem", textAlign: "center" }}>
         <div style={{ fontSize: "3.5rem", marginBottom: "1rem" }}>🏏</div>
-        <h1
-          style={{
-            fontFamily: "Rajdhani, sans-serif",
-            fontSize: "clamp(2.5rem, 6vw, 4rem)",
-            fontWeight: 800,
-            marginBottom: "0.5rem",
-            color: "var(--text-primary)",
-            lineHeight: 1.1,
-          }}
-        >
+        <h1 style={{ fontFamily: "Rajdhani, sans-serif", fontSize: "clamp(2.5rem, 6vw, 4rem)", fontWeight: 800, marginBottom: "0.5rem", color: "var(--text-primary)", lineHeight: 1.1 }}>
           Crick<span style={{ color: "#f59e0b" }}>SL</span>
         </h1>
-        <p
-          style={{
-            fontSize: "1.15rem",
-            color: "var(--text-secondary)",
-            maxWidth: "600px",
-            margin: "0 auto 0.6rem",
-            lineHeight: 1.6,
-          }}
-        >
+        <p style={{ fontSize: "1.15rem", color: "var(--text-secondary)", maxWidth: "600px", margin: "0 auto 0.6rem", lineHeight: 1.6 }}>
           T20 Cricket Analytics &amp; Decision Support System for Sri Lanka
         </p>
-        <p
-          style={{
-            fontSize: "0.85rem",
-            color: "var(--text-muted)",
-            marginBottom: "2.5rem",
-          }}
-        >
+        <p style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: "2.5rem" }}>
           Powered by 4,991 matches · 1.1M deliveries · Random Forest ML @ 72.7%
         </p>
-        <div
-          style={{
-            display: "flex",
-            gap: "1rem",
-            justifyContent: "center",
-            flexWrap: "wrap",
-          }}
-        >
-          <button
-            className="btn btn-gold"
-            style={{ fontSize: "1rem", padding: "0.8rem 2rem" }}
-            onClick={() => navigate("/venue-weather")}
-          >
+        <div style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}>
+          <button className="btn btn-gold" style={{ fontSize: "1rem", padding: "0.8rem 2rem" }} onClick={() => navigate("/venue-weather")}>
             🏟️ Start Analysis
           </button>
-          <button
-            className="btn btn-outline"
-            style={{ fontSize: "1rem", padding: "0.8rem 2rem" }}
-            onClick={() => navigate("/playing-xi")}
-          >
+          <button className="btn btn-outline" style={{ fontSize: "1rem", padding: "0.8rem 2rem" }} onClick={() => navigate("/playing-xi")}>
             👥 Select Playing XI
           </button>
         </div>
       </div>
 
       {/* ── Modules Section ───────────────────────────────────── */}
-      <div
-        style={{
-          padding: "4rem 2rem",
-          maxWidth: "1300px",
-          margin: "0 auto",
-          width: "100%",
-        }}
-      >
+      <div style={{ padding: "4rem 2rem", maxWidth: "1300px", margin: "0 auto", width: "100%" }}>
         <div style={{ textAlign: "center", marginBottom: "3rem" }}>
-          <h2
-            style={{
-              fontFamily: "Rajdhani, sans-serif",
-              fontSize: "1.6rem",
-              fontWeight: 700,
-              color: "var(--text-primary)",
-              marginBottom: "0.5rem",
-            }}
-          >
+          <h2 style={{ fontFamily: "Rajdhani, sans-serif", fontSize: "1.6rem", fontWeight: 700, color: "var(--text-primary)", marginBottom: "0.5rem" }}>
             Five Analytics Modules
           </h2>
           <p style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>
@@ -161,96 +88,20 @@ export default function Home() {
         </div>
 
         {/* Top row — 3 cards */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(3, 1fr)",
-            gap: "1.5rem",
-            marginBottom: "1.5rem",
-          }}
-        >
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1.5rem", marginBottom: "1.5rem" }}>
           {MODULES.slice(0, 3).map((m) => (
             <ModuleCard key={m.path} m={m} navigate={navigate} />
           ))}
         </div>
 
         {/* Bottom row — 2 cards centered */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(2, 1fr)",
-            gap: "1.5rem",
-            maxWidth: "900px",
-            margin: "0 auto",
-          }}
-        >
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "1.5rem", maxWidth: "900px", margin: "0 auto" }}>
           {MODULES.slice(3).map((m) => (
             <ModuleCard key={m.path} m={m} navigate={navigate} />
           ))}
         </div>
       </div>
 
-      {/* ── Tech Stack Strip ──────────────────────────────────── */}
-      <div
-        style={{
-          background: "var(--bg-card)",
-          border: "1px solid var(--border)",
-          borderRadius: "12px",
-          margin: "0 2rem 4rem",
-          maxWidth: "1300px",
-          alignSelf: "center",
-          width: "calc(100% - 4rem)",
-          padding: "2rem",
-          textAlign: "center",
-        }}
-      >
-        <div
-          style={{
-            fontSize: "0.72rem",
-            color: "var(--text-muted)",
-            textTransform: "uppercase",
-            letterSpacing: "2px",
-            marginBottom: "1.25rem",
-          }}
-        >
-          Built With
-        </div>
-        <div
-          style={{
-            display: "flex",
-            flexWrap: "wrap",
-            justifyContent: "center",
-            gap: "0.75rem",
-          }}
-        >
-          {[
-            "FastAPI",
-            "PostgreSQL",
-            "React + Vite",
-            "scikit-learn",
-            "Random Forest",
-            "Cricsheet Dataset",
-            "Open-Meteo API",
-            "JWT Auth",
-            "GitHub Actions CI",
-          ].map((t) => (
-            <span
-              key={t}
-              style={{
-                padding: "0.35rem 0.85rem",
-                background: "var(--bg-primary)",
-                border: "1px solid var(--border)",
-                borderRadius: "20px",
-                fontSize: "0.8rem",
-                color: "var(--text-secondary)",
-                fontWeight: 500,
-              }}
-            >
-              {t}
-            </span>
-          ))}
-        </div>
-      </div>
     </div>
   );
 }
@@ -259,50 +110,21 @@ function ModuleCard({ m, navigate }) {
   return (
     <div
       className="card"
-      style={{
-        cursor: "pointer",
-        borderColor: m.border,
-        transition: "transform 0.15s, box-shadow 0.15s",
-      }}
+      style={{ cursor: "pointer", borderColor: m.border, transition: "transform 0.15s, box-shadow 0.15s" }}
       onClick={() => navigate(m.path)}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.transform = "translateY(-3px)";
-        e.currentTarget.style.boxShadow = `0 8px 24px ${m.border}`;
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.transform = "none";
-        e.currentTarget.style.boxShadow = "none";
-      }}
+      onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = `0 8px 24px ${m.border}`; }}
+      onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "none"; }}
     >
-      <div style={{ fontSize: "2.2rem", marginBottom: "0.75rem" }}>
-        {m.icon}
-      </div>
-      <h3
-        style={{
-          fontFamily: "Rajdhani, sans-serif",
-          fontSize: "1.2rem",
-          fontWeight: 700,
-          marginBottom: "0.6rem",
-          color: "var(--text-primary)",
-        }}
-      >
+      <div style={{ fontSize: "2.2rem", marginBottom: "0.75rem" }}>{m.icon}</div>
+      <h3 style={{ fontFamily: "Rajdhani, sans-serif", fontSize: "1.2rem", fontWeight: 700, marginBottom: "0.6rem", color: "var(--text-primary)" }}>
         {m.title}
       </h3>
-      <p
-        style={{
-          color: "var(--text-secondary)",
-          fontSize: "0.875rem",
-          lineHeight: 1.65,
-          marginBottom: "1rem",
-        }}
-      >
+      <p style={{ color: "var(--text-secondary)", fontSize: "0.875rem", lineHeight: 1.65, marginBottom: "1rem" }}>
         {m.desc}
       </p>
       <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap" }}>
         {m.badges.map((b) => (
-          <span key={b} className={`badge ${m.badgeClass}`}>
-            {b}
-          </span>
+          <span key={b} className={`badge ${m.badgeClass}`}>{b}</span>
         ))}
       </div>
     </div>
