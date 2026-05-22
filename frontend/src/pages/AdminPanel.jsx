@@ -56,6 +56,14 @@ function UsersTab() {
     setTimeout(() => setMsg(''), 3000)
   }
 
+  const reactivate = async (id, username) => {
+    if (!window.confirm(`Reactivate ${username}?`)) return
+    await api.patch(`/auth/users/${id}`, { is_active: true })
+    setMsg(`${username} reactivated`)
+    loadUsers()
+    setTimeout(() => setMsg(''), 3000)
+  }
+
   return (
     <div>
       {msg && <div style={s.alert}>{msg}</div>}
@@ -79,7 +87,10 @@ function UsersTab() {
                 </td>
                 <td style={s.td}><span style={s.badge(u.is_active ? 'green' : 'red')}>{u.is_active ? 'Active' : 'Inactive'}</span></td>
                 <td style={s.td}>
-                  {u.is_active && <button style={s.btnDanger} onClick={() => deactivate(u.id, u.username)}>Deactivate</button>}
+                  {u.is_active
+                    ? <button style={s.btnDanger} onClick={() => deactivate(u.id, u.username)}>Deactivate</button>
+                    : <button style={s.btnSuccess} onClick={() => reactivate(u.id, u.username)}>Reactivate</button>
+                  }
                 </td>
               </tr>
             ))}
